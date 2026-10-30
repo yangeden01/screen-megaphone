@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 function log(msg) {
   console.log(`[Android Build Setup] ${msg}`);
@@ -11,40 +12,40 @@ async function run() {
     return;
   }
 
-  log('Running inside GitHub Actions CI. Configuring Android SDK & Bubblewrap paths...');
+  log('Running in GitHub Actions CI. Building Android SDK user environment...');
 
   const javaHome = process.env.JAVA_HOME || '/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-9/x64';
+  const homeDir = process.env.HOME || '/home/runner';
   const systemAndroidSdk = process.env.ANDROID_HOME || '/usr/local/lib/android/sdk';
 
-  // 1. Prepare SDK structure required by Bubblewrap (it checks for tools or bin)
-  try {
-    const cmdlineLatest = path.join(systemAndroidSdk, 'cmdline-tools', 'latest');
-    const toolsTarget = path.join(systemAndroidSdk, 'tools');
-    const binTarget = path.join(systemAndroidSdk, 'bin');
-
-    if (fs.existsSync(cmdlineLatest) && !fs.existsSync(toolsTarget)) {
-      try {
-        fs.symlinkSync(cmdlineLatest, toolsTarget, 'dir');
-        log('Created symlink for Android SDK tools.');
-      } catch (e) {
-        log(`Symlink tools note: ${e.message}`);
-      }
-    }
-
-    if (fs.existsSync(path.join(cmdlineLatest, 'bin')) && !fs.existsSync(binTarget)) {
-      try {
-        fs.symlinkSync(path.join(cmdlineLatest, 'bin'), binTarget, 'dir');
-        log('Created symlink for Android SDK bin.');
-      } catch (e) {
-        log(`Symlink bin note: ${e.message}`);
-      }
-    }
-  } catch (err) {
-    log(`SDK check note: ${err.message}`);
+  // 1. Create a writable SDK home directory in runner's home
+  const userSdk = path.join(homeDir, 'android-sdk');
+  if (!fs.existsSync(userSdk)) {
+    fs.mkdirSync(userSdk, { recursive: true });
   }
 
-  // 2. Write Bubblewrap configuration in ~/.bubblewrap/config.json
-  const homeDir = process.env.HOME || '/home/runner';
+  // Symlink existing tools so Bubblewrap validatePath passes without permission issues
+  const cmdlineLatest = path.join(systemAndroidSdk, 'cmdline-tools', 'latest');
+  const safeSymlink = (src, dest) => {
+    try {
+      if (fs.existsSync(src) && !fs.existsSync(dest)) {
+        fs.symlinkSync(src, dest, 'dir');
+        log(`Symlinked ${src} -> ${dest}`);
+      }
+    } catch (e) {
+      log(`Symlink note (${dest}): ${e.message}`);
+    }
+  };
+
+  safeSymlink(cmdlineLatest, path.join(userSdk, 'tools'));
+  if (fs.existsSync(path.join(cmdlineLatest, 'bin'))) {
+    safeSymlink(path.join(cmdlineLatest, 'bin'), path.join(userSdk, 'bin'));
+  }
+  safeSymlink(path.join(systemAndroidSdk, 'build-tools'), path.join(userSdk, 'build-tools'));
+  safeSymlink(path.join(systemAndroidSdk, 'platform-tools'), path.join(userSdk, 'platform-tools'));
+  safeSymlink(path.join(systemAndroidSdk, 'platforms'), path.join(userSdk, 'platforms'));
+
+  // 2. Configure Bubblewrap paths in ~/.bubblewrap/config.json
   const bubblewrapConfigDir = path.join(homeDir, '.bubblewrap');
   if (!fs.existsSync(bubblewrapConfigDir)) {
     fs.mkdirSync(bubblewrapConfigDir, { recursive: true });
@@ -52,23 +53,41 @@ async function run() {
 
   const bubblewrapConfig = {
     jdkPath: javaHome,
-    androidSdkPath: systemAndroidSdk
+    androidSdkPath: userSdk
   };
   fs.writeFileSync(
     path.join(bubblewrapConfigDir, 'config.json'),
     JSON.stringify(bubblewrapConfig, null, 2)
   );
-  log(`Configured Bubblewrap at ${path.join(bubblewrapConfigDir, 'config.json')}`);
+  log(`Wrote Bubblewrap config pointing to ${userSdk}`);
 
-  // Ensure any pre-existing android.keystore is cleaned so keytool step generates cleanly
+  // 3. Ensure keystore exists or is created cleanly
   const keystorePath = path.resolve('android.keystore');
-  if (fs.existsSync(keystorePath)) {
+  if (!fs.existsSync(keystorePath)) {
     try {
-      fs.unlinkSync(keystorePath);
-      log('Cleaned old keystore for fresh generation.');
+      execSync(
+        `keytool -genkey -v -keystore "${keystorePath}" -alias android -keyalg RSA -keysize 2048 -validity 10000 -storepass androidpassword -keypass androidpassword -dname "CN=ScreenMegaphone, OU=App, O=Megaphone, L=Taipei, S=Taiwan, C=TW"`,
+        { stdio: 'inherit' }
+      );
+      log('Created android.keystore successfully.');
     } catch (e) {
-      // ignore
+      log(`Keytool warning: ${e.message}`);
     }
+  }
+
+  // 4. Install Bubblewrap CLI and run build directly here
+  try {
+    log('Running Bubblewrap build in CI postbuild...');
+    execSync('npm install -g @bubblewrap/cli', { stdio: 'inherit' });
+    
+    // Run bubblewrap build with "yes" piped to auto-confirm any regeneration prompt
+    execSync(
+      `yes "" | bubblewrap build --skipPwaValidation --keyStorePath "${keystorePath}" --keyStorePassword androidpassword --keyPassword androidpassword`,
+      { stdio: 'inherit', env: { ...process.env, ANDROID_HOME: userSdk } }
+    );
+    log('Bubblewrap build execution completed successfully!');
+  } catch (err) {
+    log(`Bubblewrap build note: ${err.message}`);
   }
 }
 
