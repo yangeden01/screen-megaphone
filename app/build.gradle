@@ -150,9 +150,24 @@ android {
 
         
     }
+    signingConfigs {
+        release {
+            def keystoreFile = file('../android.keystore')
+            if (!keystoreFile.exists()) {
+                keystoreFile = file('../../android.keystore')
+            }
+            if (keystoreFile.exists()) {
+                storeFile keystoreFile
+                storePassword 'androidpassword'
+                keyAlias 'android'
+                keyPassword 'androidpassword'
+            }
+        }
+    }
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
+            signingConfig signingConfigs.release
         }
     }
     compileOptions {

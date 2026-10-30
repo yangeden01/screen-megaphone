@@ -32,5 +32,9 @@
   "isChromeOSOnly": false,
   "isMetaQuest": false,
   "fullScopeUrl": "https://ais-pre-lk2hub2itppsfkygiranni-290275720433.asia-northeast1.run.app/",
-  "orientation": "any"
+  "orientation": "any",
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  }
 }
