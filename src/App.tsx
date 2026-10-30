@@ -53,7 +53,14 @@ export default function App() {
     }
   });
 
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('play') === 'true' || params.get('fullscreen') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [showInterstitialAd, setShowInterstitialAd] = useState(false);
   const [activeTab, setActiveTab] = useState<'editor' | 'templates' | 'saved'>('editor');
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);

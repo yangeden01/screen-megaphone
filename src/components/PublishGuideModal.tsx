@@ -19,7 +19,7 @@ interface PublishGuideModalProps {
 }
 
 export const PublishGuideModal: React.FC<PublishGuideModalProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'opportunity' | 'twa' | 'checklist' | 'monetization'>('opportunity');
+  const [activeTab, setActiveTab] = useState<'opportunity' | 'twa' | 'checklist' | 'monetization' | 'downloads'>('opportunity');
   const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -108,6 +108,17 @@ bubblewrap build
             }`}
           >
             4. 廣告與盈利模式
+          </button>
+          <button
+            onClick={() => setActiveTab('downloads')}
+            className={`pb-2.5 text-xs font-medium border-b-2 transition whitespace-nowrap flex items-center gap-1.5 ${
+              activeTab === 'downloads'
+                ? 'border-emerald-500 text-emerald-400'
+                : 'border-transparent text-emerald-500/80 hover:text-emerald-400'
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            5. 安裝包與 APK 畫面說明
           </button>
         </div>
 
@@ -318,6 +329,92 @@ bubblewrap build
 
               <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
                 <strong>現狀：</strong>本專案已在 <code>src/components/AdBanner.tsx</code> 與 <code>src/components/AdInterstitialModal.tsx</code> 中完整預留廣告插槽與展示邏輯，您現在點擊全螢幕應援後再關閉，即可立即體驗插頁廣告的觸發效果！
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: DOWNLOADS & APK SCREEN GUIDE */}
+          {activeTab === 'downloads' && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-500/15 via-zinc-900 to-cyan-500/15 border border-emerald-500/30">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="text-sm font-bold text-zinc-100">
+                      Android 安裝檔已編譯完成並全數通過數位簽名
+                    </h3>
+                    <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+                      GitHub Actions 已於最新輪次成功建置產出，包含直接在 Android 手機點擊安裝測試的 <strong>.apk 檔案</strong>，以及上傳至 Google Play Console 發布用的 <strong>.aab 檔案</strong>。
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <a
+                        href="https://github.com/yangeden01/screen-megaphone/actions/runs/41126527558"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-semibold text-xs transition"
+                      >
+                        前往 GitHub Actions 下載最新 APK / AAB
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* APK App Screen Flow */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-semibold text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+                  <Smartphone className="w-4 h-4 text-pink-400" />
+                  APK 安裝後的手機開啟畫面與操作流程
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div className="p-3.5 rounded-xl bg-zinc-800/40 border border-zinc-800 space-y-1.5">
+                    <span className="font-semibold text-pink-400 block">
+                      1. 啟動進入「彈幕主工作台」
+                    </span>
+                    <p className="text-zinc-400 leading-relaxed">
+                      點擊桌面圖示後，App 將以全黑霓虹啟動畫面迅速進入主頁面。頂部即時預覽 LED 點陣滾動效果，下方提供即時字體、顏色、霓虹發光、點陣顆粒大小等調校面板。
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-zinc-800/40 border border-zinc-800 space-y-1.5">
+                    <span className="font-semibold text-emerald-400 block">
+                      2. 點擊「全螢幕播放」進入應援模式
+                    </span>
+                    <p className="text-zinc-400 leading-relaxed">
+                      點擊底部的「全螢幕播放」按鈕，手機自動進入橫向全螢幕無干擾模式，操作面板完全隱藏，化身超亮手持應援燈牌。
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-zinc-800/40 border border-zinc-800 space-y-1.5">
+                    <span className="font-semibold text-cyan-400 block">
+                      3. 自動常亮防休眠（Wake Lock）
+                    </span>
+                    <p className="text-zinc-400 leading-relaxed">
+                      在全螢幕模式下已內建智慧螢幕鎖定，長時間手持應援、接機或擺在車窗前，螢幕均不會因為逾時而變暗或自動休眠。
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-zinc-800/40 border border-zinc-800 space-y-1.5">
+                    <span className="font-semibold text-amber-400 block">
+                      4. 輕觸螢幕隨時喚出控制選單
+                    </span>
+                    <p className="text-zinc-400 leading-relaxed">
+                      全螢幕播放中，只需點擊螢幕任何位置，即可叫出浮動工具列（退出全螢幕、暫停/繼續滾動、微調滾動速度），操作極具直覺性。
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-zinc-800/60 border border-zinc-700/80 space-y-2 text-xs">
+                  <div className="font-semibold text-zinc-200 flex items-center gap-1.5">
+                    <Check className="w-4 h-4 text-emerald-400" />
+                    無頂部網址列（Digital Asset Links 已配置）
+                  </div>
+                  <p className="text-zinc-400 leading-relaxed">
+                    我們已在 <code>/.well-known/assetlinks.json</code> 完成與 APK 數位簽名（SHA-256）的綁定，當 APK 在支援的 Android 手機上執行時，將直接以純原生全螢幕呈現，不會帶有任何 Chrome 瀏覽器頂部網址列。
+                  </p>
+                </div>
               </div>
             </div>
           )}

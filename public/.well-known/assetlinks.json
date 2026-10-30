@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.screenmegaphone.ledbanner",
+    "sha256_cert_fingerprints": [
+      "00:D1:35:45:DD:53:AF:0F:99:A6:76:A0:06:10:88:22:2C:67:AC:37:0C:25:F7:A8:B3:59:BF:72:75:4F:21:51"
+    ]
+  }
+}]
