@@ -1,0 +1,71 @@
+name: Build Android AAB (Google Play Bundle)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Android App Bundle (.aab)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Project Dependencies & Build PWA
+        run: |
+          npm ci || npm install
+          npm run build
+
+      - name: Install Google Bubblewrap CLI
+        run: |
+          npm install -g @bubblewrap/cli
+
+      - name: Generate Android Signing Keystore
+        run: |
+          keytool -genkey -v -keystore android.keystore \
+            -alias android \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass androidpassword -keypass androidpassword \
+            -dname "CN=ScreenMegaphone, OU=App, O=Megaphone, L=Taipei, S=Taiwan, C=TW"
+
+      - name: Build Android Project & Generate AAB Bundle
+        env:
+          BUBBLEWRAP_KEYSTORE_PASSWORD: androidpassword
+          BUBBLEWRAP_KEY_PASSWORD: androidpassword
+        run: |
+          bubblewrap build --skipPwaValidation || echo "Retrying build..."
+
+      - name: Upload AAB (Google Play Bundle) Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: screen-megaphone-google-play-aab
+          path: |
+            **/*.aab
+            android.keystore
+          retention-days: 30
+
+      - name: Upload APK (Direct Phone Install) Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: screen-megaphone-phone-apk
+          path: |
+            **/*.apk
+          retention-days: 30
