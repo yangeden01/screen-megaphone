@@ -55,7 +55,7 @@ android {
     namespace "com.screenmegaphone.ledbanner"
     defaultConfig {
         applicationId "com.screenmegaphone.ledbanner"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 36
         versionCode 1
         versionName "1.0.0"
