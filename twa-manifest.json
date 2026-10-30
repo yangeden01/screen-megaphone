@@ -12,6 +12,7 @@
   "maskableIconUrl": "https://ais-pre-lk2hub2itppsfkygiranni-290275720433.asia-northeast1.run.app/pwa-maskable-512x512.png",
   "appVersionName": "1.0.0",
   "appVersionCode": 1,
+  "splashScreenFadeOutDuration": 300,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://ais-pre-lk2hub2itppsfkygiranni-290275720433.asia-northeast1.run.app/manifest.webmanifest",
