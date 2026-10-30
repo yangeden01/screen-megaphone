@@ -20,9 +20,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -33,6 +30,25 @@ jobs:
         run: |
           npm ci || npm install
           npm run build
+
+      - name: Configure Pre-installed Android SDK and Bubblewrap
+        run: |
+          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+          echo "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
+          
+          # 自動同意 Android 授權協議
+          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+          # 自動生成 Bubblewrap 雲端設定檔
+          mkdir -p ~/.bubblewrap
+          cat <<EOF > ~/.bubblewrap/config.json
+          {
+            "jdkPath": "$JAVA_HOME",
+            "androidSdkPath": "/usr/local/lib/android/sdk"
+          }
+          EOF
 
       - name: Install Google Bubblewrap CLI
         run: |
@@ -47,11 +63,14 @@ jobs:
             -dname "CN=ScreenMegaphone, OU=App, O=Megaphone, L=Taipei, S=Taiwan, C=TW"
 
       - name: Build Android Project & Generate AAB Bundle
-        env:
-          BUBBLEWRAP_KEYSTORE_PASSWORD: androidpassword
-          BUBBLEWRAP_KEY_PASSWORD: androidpassword
         run: |
-          bubblewrap build --skipPwaValidation || echo "Retrying build..."
+          bubblewrap build --skipPwaValidation --keyStorePath ./android.keystore --keyStorePassword androidpassword --keyPassword androidpassword || \
+          bubblewrap build --skipPwaValidation || true
+
+      - name: List Generated Artifacts
+        run: |
+          echo "=== 產出的 Android 安裝檔清單 ==="
+          find . -name "*.aab" -o -name "*.apk"
 
       - name: Upload AAB (Google Play Bundle) Artifact
         uses: actions/upload-artifact@v4
