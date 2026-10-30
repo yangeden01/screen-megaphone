@@ -1,0 +1,35 @@
+{
+  "packageId": "com.screenmegaphone.ledbanner",
+  "host": "ais-pre-lk2hub2itppsfkygiranni-290275720433.asia-northeast1.run.app",
+  "name": "螢幕大聲公 - LED 手持彈幕",
+  "launcherName": "螢幕大聲公",
+  "themeColor": "#09090B",
+  "navigationColor": "#09090B",
+  "backgroundColor": "#09090B",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "https://ais-pre-lk2hub2itppsfkygiranni-290275720433.asia-northeast1.run.app/pwa-512x512.png",
+  "maskableIconUrl": "https://ais-pre-lk2hub2itppsfkygiranni-290275720433.asia-northeast1.run.app/pwa-maskable-512x512.png",
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://ais-pre-lk2hub2itppsfkygiranni-290275720433.asia-northeast1.run.app/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://ais-pre-lk2hub2itppsfkygiranni-290275720433.asia-northeast1.run.app/",
+  "orientation": "any"
+}

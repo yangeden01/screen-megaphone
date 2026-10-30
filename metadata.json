@@ -1,0 +1,6 @@
+{
+  "name": "LED 手持彈幕 - 演唱會應援與滾動跑馬燈",
+  "description": "專業級 LED 手持彈幕與滾動跑馬燈工具，支援擬真點陣矩陣、霓虹發光、動態彩虹、速度與方向調整、螢幕常亮及 PWA 上架支援。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

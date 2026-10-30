@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="100%" stop-color="#09090b" />
+    </radialGradient>
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="110" fill="url(#bgGlow)" />
+  
+  <!-- Subtle Matrix Grid Dots Background -->
+  <g opacity="0.12" fill="#ffffff">
+    <!-- Grid pattern -->
+    <pattern id="matrixPattern" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="12" cy="12" r="3" />
+    </pattern>
+    <rect x="20" y="20" width="472" height="472" rx="90" fill="url(#matrixPattern)" />
+  </g>
+
+  <!-- Glowing LED Dot Matrix spelling L E D -->
+  <g filter="url(#neonGlow)">
+    <!-- Letter L in Cyan / Lime / Yellow -->
+    <!-- Column 1 -->
+    <circle cx="110" cy="180" r="14" fill="#ff4d4d" />
+    <circle cx="110" cy="220" r="14" fill="#ff7733" />
+    <circle cx="110" cy="260" r="14" fill="#ffaa00" />
+    <circle cx="110" cy="300" r="14" fill="#ffdd00" />
+    <circle cx="110" cy="340" r="14" fill="#ffee33" />
+    <!-- Row bottom -->
+    <circle cx="150" cy="340" r="14" fill="#ccff00" />
+    <circle cx="190" cy="340" r="14" fill="#88ff00" />
+
+    <!-- Letter E in Green / Cyan / Blue -->
+    <circle cx="230" cy="180" r="14" fill="#00ffcc" />
+    <circle cx="230" cy="220" r="14" fill="#00e5ff" />
+    <circle cx="230" cy="260" r="14" fill="#00bfff" />
+    <circle cx="230" cy="300" r="14" fill="#0099ff" />
+    <circle cx="230" cy="340" r="14" fill="#3388ff" />
+    <!-- Top bar -->
+    <circle cx="270" cy="180" r="14" fill="#00f0ff" />
+    <circle cx="310" cy="180" r="14" fill="#00d4ff" />
+    <!-- Mid bar -->
+    <circle cx="270" cy="260" r="14" fill="#00a2ff" />
+    <!-- Bottom bar -->
+    <circle cx="270" cy="340" r="14" fill="#5577ff" />
+    <circle cx="310" cy="340" r="14" fill="#7766ff" />
+
+    <!-- Letter D in Purple / Pink / Orange -->
+    <circle cx="350" cy="180" r="14" fill="#a855f7" />
+    <circle cx="350" cy="220" r="14" fill="#c026d3" />
+    <circle cx="350" cy="260" r="14" fill="#db2777" />
+    <circle cx="350" cy="300" r="14" fill="#e11d48" />
+    <circle cx="350" cy="340" r="14" fill="#f43f5e" />
+    <!-- Curve -->
+    <circle cx="390" cy="180" r="14" fill="#c084fc" />
+    <circle cx="420" cy="215" r="14" fill="#e879f9" />
+    <circle cx="430" cy="260" r="14" fill="#f472b6" />
+    <circle cx="420" cy="305" r="14" fill="#fb7185" />
+    <circle cx="390" cy="340" r="14" fill="#fda4af" />
+  </g>
+
+  <!-- Border accent ring -->
+  <rect x="12" y="12" width="488" height="488" rx="100" fill="none" stroke="#38bdf8" stroke-width="3" opacity="0.3" />
+</svg>
