@@ -31,53 +31,37 @@ jobs:
           npm ci || npm install
           npm run build
 
-      - name: Configure Pre-installed Android SDK and Bubblewrap
+      - name: Configure Android SDK
         run: |
           echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-          echo "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
-          
-          # 自動同意 Android 授權協議
-          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-
-          # 自動生成 Bubblewrap 雲端設定檔
-          mkdir -p ~/.bubblewrap
-          cat <<EOF > ~/.bubblewrap/config.json
-          {
-            "jdkPath": "$JAVA_HOME",
-            "androidSdkPath": "/usr/local/lib/android/sdk"
-          }
-          EOF
-
-      - name: Install Google Bubblewrap CLI
-        run: |
-          npm install -g @bubblewrap/cli
+          sudo ln -s /usr/local/lib/android/sdk/cmdline-tools/latest /usr/local/lib/android/sdk/tools 2>/dev/null || true
 
       - name: Generate Android Signing Keystore
         run: |
+          rm -f android.keystore
           keytool -genkey -v -keystore android.keystore \
             -alias android \
             -keyalg RSA -keysize 2048 -validity 10000 \
             -storepass androidpassword -keypass androidpassword \
             -dname "CN=ScreenMegaphone, OU=App, O=Megaphone, L=Taipei, S=Taiwan, C=TW"
 
-      - name: Build Android Project & Generate AAB Bundle
+      - name: Build Android Project with Gradle
         run: |
-          bubblewrap build --skipPwaValidation --keyStorePath ./android.keystore --keyStorePassword androidpassword --keyPassword androidpassword || \
-          bubblewrap build --skipPwaValidation || true
+          chmod +x ./gradlew
+          ./gradlew bundleRelease assembleRelease
 
       - name: List Generated Artifacts
         run: |
           echo "=== 產出的 Android 安裝檔清單 ==="
-          find . -name "*.aab" -o -name "*.apk"
+          find app/build/outputs -name "*.aab" -o -name "*.apk" || find . -name "*.aab" -o -name "*.apk"
 
       - name: Upload AAB (Google Play Bundle) Artifact
         uses: actions/upload-artifact@v4
         with:
           name: screen-megaphone-google-play-aab
           path: |
-            **/*.aab
+            app/build/outputs/bundle/release/*.aab
             android.keystore
           retention-days: 30
 
@@ -86,5 +70,5 @@ jobs:
         with:
           name: screen-megaphone-phone-apk
           path: |
-            **/*.apk
+            app/build/outputs/apk/release/*.apk
           retention-days: 30
