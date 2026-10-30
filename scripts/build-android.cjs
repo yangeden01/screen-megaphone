@@ -1,18 +1,17 @@
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 
 function log(msg) {
-  console.log(`[Android Build] ${msg}`);
+  console.log(`[Android Build Setup] ${msg}`);
 }
 
 async function run() {
   if (!process.env.CI && !process.env.GITHUB_ACTIONS) {
-    log('Local environment: skipping automated CI Android build.');
+    log('Local environment: skipping CI setup.');
     return;
   }
 
-  log('Running inside GitHub Actions CI. Preparing Android SDK and Bubblewrap...');
+  log('Running inside GitHub Actions CI. Configuring Android SDK & Bubblewrap paths...');
 
   const javaHome = process.env.JAVA_HOME || '/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-9/x64';
   const systemAndroidSdk = process.env.ANDROID_HOME || '/usr/local/lib/android/sdk';
@@ -61,40 +60,18 @@ async function run() {
   );
   log(`Configured Bubblewrap at ${path.join(bubblewrapConfigDir, 'config.json')}`);
 
-  // 3. Generate keystore if not exists
+  // Ensure any pre-existing android.keystore is cleaned so keytool step generates cleanly
   const keystorePath = path.resolve('android.keystore');
-  if (!fs.existsSync(keystorePath)) {
+  if (fs.existsSync(keystorePath)) {
     try {
-      execSync(
-        `keytool -genkey -v -keystore "${keystorePath}" -alias android -keyalg RSA -keysize 2048 -validity 10000 -storepass androidpassword -keypass androidpassword -dname "CN=ScreenMegaphone, OU=App, O=Megaphone, L=Taipei, S=Taiwan, C=TW"`,
-        { stdio: 'inherit' }
-      );
-      log('Generated android.keystore successfully.');
+      fs.unlinkSync(keystorePath);
+      log('Cleaned old keystore for fresh generation.');
     } catch (e) {
-      log(`Keytool warning: ${e.message}`);
+      // ignore
     }
-  }
-
-  // 4. Install bubblewrap CLI globally if needed
-  try {
-    execSync('which bubblewrap || npm install -g @bubblewrap/cli', { stdio: 'inherit' });
-  } catch (e) {
-    log(`Bubblewrap check: ${e.message}`);
-  }
-
-  // 5. Run Bubblewrap build
-  try {
-    log('Building Android TWA with Bubblewrap...');
-    execSync(
-      `bubblewrap build --skipPwaValidation --keyStorePath "${keystorePath}" --keyStorePassword androidpassword --keyPassword androidpassword`,
-      { stdio: 'inherit' }
-    );
-    log('Bubblewrap build finished successfully!');
-  } catch (err) {
-    log(`Bubblewrap direct build error, trying fallback... ${err.message}`);
   }
 }
 
 run().catch((e) => {
-  console.error('[Android Build Error]', e);
+  console.error('[Android Build Setup Error]', e);
 });
