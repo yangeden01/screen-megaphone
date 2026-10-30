@@ -75,14 +75,14 @@ async function run() {
     }
   }
 
-  // 4. Install Bubblewrap CLI and run build directly here
+  // 4. Install Bubblewrap CLI and run non-interactive build with --skipVersionPrompt
   try {
-    log('Running Bubblewrap build in CI postbuild...');
+    log('Running Bubblewrap build with --skipVersionPrompt in CI postbuild...');
     execSync('npm install -g @bubblewrap/cli', { stdio: 'inherit' });
     
-    // Run bubblewrap build with "yes" piped to auto-confirm any regeneration prompt
+    // Bubblewrap build: --skipVersionPrompt uses version from twa-manifest.json non-interactively!
     execSync(
-      `yes "" | bubblewrap build --skipPwaValidation --keyStorePath "${keystorePath}" --keyStorePassword androidpassword --keyPassword androidpassword`,
+      `bubblewrap build --skipPwaValidation --skipVersionPrompt --keyStorePath "${keystorePath}" --keyStorePassword androidpassword --keyPassword androidpassword`,
       { stdio: 'inherit', env: { ...process.env, ANDROID_HOME: userSdk } }
     );
     log('Bubblewrap build execution completed successfully!');
