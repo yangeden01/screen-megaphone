@@ -89,18 +89,59 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
     };
   }, [isStrobing]);
 
+  const cheerIntervalRef = useRef<number | null>(null);
+
+  // Clean up cheer interval on unmount
+  useEffect(() => {
+    return () => {
+      if (cheerIntervalRef.current) {
+        clearInterval(cheerIntervalRef.current);
+      }
+    };
+  }, []);
+
   const handleScreenClick = () => {
     resetHideTimer();
   };
 
   const handleConfettiCheer = (e: React.MouseEvent) => {
     e.stopPropagation();
-    confetti({
-      particleCount: 80,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#ff0055', '#00ffcc', '#ffcc00', '#3b82f6', '#a855f7'],
-    });
+
+    // Clear any existing firework sequence
+    if (cheerIntervalRef.current) {
+      clearInterval(cheerIntervalRef.current);
+      cheerIntervalRef.current = null;
+    }
+
+    let burstCount = 0;
+    const totalBursts = 20;
+
+    // Consecutive 20-burst fireworks celebration
+    cheerIntervalRef.current = window.setInterval(() => {
+      burstCount++;
+
+      // Alternating fireworks trajectory from left cannon, right cannon, and center
+      const originX = burstCount % 3 === 0 ? 0.5 : burstCount % 2 === 0 ? 0.15 : 0.85;
+      const angle = burstCount % 3 === 0 ? 90 : burstCount % 2 === 0 ? 60 : 120;
+
+      confetti({
+        particleCount: 50 + Math.floor(Math.random() * 30),
+        angle: angle + (Math.random() * 20 - 10),
+        spread: 60 + Math.random() * 30,
+        origin: { x: originX, y: 0.75 + Math.random() * 0.15 },
+        colors: ['#ff0055', '#00ffcc', '#ffcc00', '#3b82f6', '#a855f7', '#ff3366', '#00ff88'],
+        startVelocity: 35 + Math.random() * 20,
+        ticks: 200,
+        gravity: 0.9,
+      });
+
+      if (burstCount >= totalBursts) {
+        if (cheerIntervalRef.current) {
+          clearInterval(cheerIntervalRef.current);
+          cheerIntervalRef.current = null;
+        }
+      }
+    }, 150); // Fires every 150ms for ~3 seconds of continuous fireworks!
   };
 
   return (

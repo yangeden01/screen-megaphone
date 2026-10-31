@@ -221,18 +221,18 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-pink-500 selection:text-white pb-20 md:pb-12">
-      {/* Top Bar following Top Bar Contract: 3 zones, gap-8 */}
-      <header className="sticky top-0 z-40 bg-zinc-950/85 backdrop-blur-md border-b border-zinc-800/80 px-4 md:px-8 py-3.5 flex items-center justify-between gap-8">
+      {/* Top Bar following Top Bar Contract: 3 zones */}
+      <header className="sticky top-0 z-40 bg-zinc-950/85 backdrop-blur-md border-b border-zinc-800/80 px-3 sm:px-6 md:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-6">
         {/* Zone 1: Brand wordmark */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-pink-500 via-amber-400 to-cyan-400 p-0.5 shadow-md shadow-pink-500/20">
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-tr from-pink-500 via-amber-400 to-cyan-400 p-0.5 shadow-md shadow-pink-500/20">
             <div className="w-full h-full bg-zinc-950 rounded-[6px] flex items-center justify-center">
-              <span className="text-[11px] font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-amber-300">
+              <span className="text-[10px] sm:text-[11px] font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-amber-300">
                 LED
               </span>
             </div>
           </div>
-          <span className="text-base font-bold tracking-tight text-zinc-100 whitespace-nowrap">
+          <span className="text-sm sm:text-base font-bold tracking-tight text-zinc-100 whitespace-nowrap">
             {t.appName}
           </span>
         </div>
@@ -273,15 +273,15 @@ export default function App() {
         </nav>
 
         {/* Zone 3: Primary action + Language Switcher + PWA Install */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Language Selector */}
-          <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-700/80 rounded-xl px-2 py-1.5 shadow-sm">
+          <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-700/80 rounded-xl px-1.5 sm:px-2 py-1 sm:py-1.5 shadow-sm">
             <Globe className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
             <select
               value={currentLang}
               onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
               aria-label={t.switchLanguage}
-              className="bg-transparent text-xs text-zinc-200 focus:outline-none cursor-pointer pr-1"
+              className="bg-transparent text-[11px] sm:text-xs text-zinc-200 focus:outline-none cursor-pointer pr-0.5"
             >
               <option value="zh-TW" className="bg-zinc-900 text-zinc-100">繁體中文</option>
               <option value="en" className="bg-zinc-900 text-zinc-100">English</option>
@@ -295,10 +295,12 @@ export default function App() {
 
           <button
             onClick={() => setIsFullscreen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white text-xs font-semibold shadow-lg shadow-pink-600/25 transition active:scale-95 whitespace-nowrap shrink-0"
+            className="flex items-center gap-1 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white text-xs font-semibold shadow-lg shadow-pink-600/25 transition active:scale-95 whitespace-nowrap shrink-0"
+            title={t.openFullscreen}
           >
-            <Maximize2 className="w-3.5 h-3.5" />
-            <span>{t.openFullscreen}</span>
+            <Maximize2 className="w-3.5 h-3.5 shrink-0" />
+            <span className="hidden sm:inline">{t.openFullscreen}</span>
+            <span className="sm:hidden">全螢幕</span>
           </button>
         </div>
       </header>

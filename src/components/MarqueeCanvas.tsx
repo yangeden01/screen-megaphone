@@ -345,7 +345,7 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
         style={{ imageRendering: config.renderMode === 'pixel-art' ? 'pixelated' : 'auto' }}
       />
       {isPaused && (
-        <div className="absolute top-3 right-3 px-2.5 py-1 rounded-md bg-black/70 backdrop-blur-sm border border-zinc-700/60 text-xs font-mono text-zinc-300 flex items-center gap-1.5 shadow-lg pointer-events-none">
+        <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur-sm border border-zinc-700/60 text-xs font-mono text-zinc-300 flex items-center gap-1.5 shadow-lg pointer-events-none">
           <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
           已暫停
         </div>
