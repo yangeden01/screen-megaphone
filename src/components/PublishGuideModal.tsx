@@ -22,6 +22,8 @@ export const PublishGuideModal: React.FC<PublishGuideModalProps> = ({ isOpen, on
   const [activeTab, setActiveTab] = useState<'opportunity' | 'twa' | 'checklist' | 'monetization' | 'downloads' | 'testers'>('testers');
   const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
 
+  const [postLanguage, setPostLanguage] = useState<'zh' | 'en'>('zh');
+
   if (!isOpen) return null;
 
   const handleCopy = (text: string, id: string) => {
@@ -41,7 +43,7 @@ bubblewrap build
 
 # 產出的 app-release-signed.aab 即可直接上傳至 Google Play Console！`;
 
-  const testerPost = `【互測互載 14天】Google Play 個人開發者 20人封測互相支援！《螢幕大聲公》必回載並保留 14 天！
+  const testerPostZh = `【互測互載 14天】Google Play 個人開發者 20人封測互相支援！《螢幕大聲公》必回載並保留 14 天！
 
 各位開發者夥伴大家好！
 
@@ -72,6 +74,41 @@ bubblewrap build
 - 測試期間絕不卸載，每天主動開起來幫忙維持活躍度，協助大家一起順利通過 14 天門檻、成功正式上架！
 
 感謝大家互相幫忙，祝大家的 App 都能順利過審上線！🎉`;
+
+  const testerPostEn = `[Test for Test / Mutual 14 Days] Need 20 testers for Screen Megaphone (Ultra-Bright LED Scroller). Will test back immediately & keep installed 14+ days!
+
+Hi fellow developers!
+
+To meet Google Play's 20-tester / 14-day closed testing requirement, I need 20 testers for my new app: **Screen Megaphone - LED Scroller & Cheer Banner**.
+
+I will gladly **test your app back, leave a 5-star review, and keep it installed for more than 14 days**!
+
+---
+
+📱 How to join the closed test (3 quick steps):
+
+1. Step 1: Join the Google Group (Required for tester access)
+👉 https://groups.google.com/g/screen-megaphone-testers
+(Sign in with your Google account and click "Join group")
+
+2. Step 2: Accept Test Invitation (Web Opt-in - Crucial!)
+👉 https://play.google.com/apps/testing/com.screenmegaphone.ledbanner
+(⚠️ Important: Please click "Become a Tester" first, otherwise Google Play Store will show "Item not found")
+
+3. Step 3: Download and install from Google Play Store
+👉 https://play.google.com/store/apps/details?id=com.screenmegaphone.ledbanner
+(Or click "Download it on Google Play" directly from the opt-in page)
+
+---
+
+🤝 My Guarantee & Mutual Testing Commitment:
+- Drop your Google Group / Web Opt-in / Store link or screenshot in the comments below!
+- I will install your app within 12 hours and reply with an installed proof screenshot + review.
+- I will keep your app installed for 14+ days and open it regularly to keep active.
+
+Thank you all for the mutual support! Let's get our apps published together! 🎉`;
+
+  const activeTesterPost = postLanguage === 'zh' ? testerPostZh : testerPostEn;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
@@ -464,36 +501,83 @@ bubblewrap build
           {/* TAB 6: TESTERS RECRUITMENT POST */}
           {activeTab === 'testers' && (
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start justify-between gap-3">
+              {/* Language Switcher & Copy Header */}
+              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-amber-300 flex items-center gap-2">
-                    🔥 20人封測互相支援招募文案（已校正防呆連結）
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-amber-300">
+                      🔥 20人封測互相支援招募文案
+                    </h3>
+                    {/* Language Pills */}
+                    <div className="inline-flex rounded-lg bg-zinc-800 p-0.5 border border-zinc-700">
+                      <button
+                        onClick={() => setPostLanguage('zh')}
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition ${
+                          postLanguage === 'zh'
+                            ? 'bg-amber-500 text-black shadow'
+                            : 'text-zinc-400 hover:text-zinc-200'
+                        }`}
+                      >
+                        繁體中文
+                      </button>
+                      <button
+                        onClick={() => setPostLanguage('en')}
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition ${
+                          postLanguage === 'en'
+                            ? 'bg-cyan-500 text-black shadow'
+                            : 'text-zinc-400 hover:text-zinc-200'
+                        }`}
+                      >
+                        English (Reddit)
+                      </button>
+                    </div>
+                  </div>
                   <p className="text-xs text-zinc-400 leading-relaxed">
-                    此文案已包含「先加群組 ➔ 再點受邀啟用 ➔ 最後開商店下載」的標準 3 步驟，可避免夥伴遇到「找不到項目」的錯誤。
+                    {postLanguage === 'zh'
+                      ? '已校正「先入群組 ➔ 再點受邀啟用 ➔ 最後開商店下載」3 步驟，避免夥伴遇到「找不到項目」錯誤。'
+                      : 'Optimized for Reddit r/AndroidClosedTesting, Discord & global developer testing groups.'}
                   </p>
                 </div>
-                <button
-                  onClick={() => handleCopy(testerPost, 'full-post')}
-                  className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 shrink-0 transition shadow-lg ${
-                    copiedSnippet === 'full-post'
-                      ? 'bg-emerald-600 text-white shadow-emerald-500/20'
-                      : 'bg-amber-500 hover:bg-amber-400 text-black shadow-amber-500/20'
-                  }`}
-                >
-                  {copiedSnippet === 'full-post' ? (
-                    <>
-                      <Check className="w-4 h-4" />
-                      已複製成功！
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4" />
-                      一鍵複製完整貼文
-                    </>
-                  )}
-                </button>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => handleCopy(activeTesterPost, 'full-post')}
+                    className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 shrink-0 transition shadow-lg ${
+                      copiedSnippet === 'full-post'
+                        ? 'bg-emerald-600 text-white shadow-emerald-500/20'
+                        : postLanguage === 'zh'
+                        ? 'bg-amber-500 hover:bg-amber-400 text-black shadow-amber-500/20'
+                        : 'bg-cyan-500 hover:bg-cyan-400 text-black shadow-cyan-500/20'
+                    }`}
+                  >
+                    {copiedSnippet === 'full-post' ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        已複製成功！
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        一鍵複製{postLanguage === 'zh' ? '中文' : '英文'}貼文
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
+
+              {/* Reddit Recommendations when English is chosen */}
+              {postLanguage === 'en' && (
+                <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-800/60 text-xs text-cyan-200 flex items-start gap-2.5">
+                  <div className="p-1 rounded bg-cyan-500/20 text-cyan-300 font-bold shrink-0 text-[10px]">REDDIT</div>
+                  <div className="space-y-1">
+                    <div className="font-semibold text-cyan-300">海外發文推薦社群：</div>
+                    <div className="text-[11px] text-zinc-300">
+                      1. <a href="https://www.reddit.com/r/AndroidClosedTesting/" target="_blank" rel="noreferrer" className="underline hover:text-cyan-400">Reddit r/AndroidClosedTesting</a>（全球最大互測板，貼上此文通常 1-2 天內集滿 20 人）<br />
+                      2. <a href="https://www.reddit.com/r/playstoretesters/" target="_blank" rel="noreferrer" className="underline hover:text-cyan-400">Reddit r/playstoretesters</a>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Individual quick copy links */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
@@ -542,7 +626,7 @@ bubblewrap build
 
               {/* Text Area Preview */}
               <div className="relative rounded-xl border border-zinc-800 bg-zinc-950 p-4 font-mono text-xs text-zinc-300 whitespace-pre-wrap leading-relaxed max-h-72 overflow-y-auto">
-                {testerPost}
+                {activeTesterPost}
               </div>
             </div>
           )}
