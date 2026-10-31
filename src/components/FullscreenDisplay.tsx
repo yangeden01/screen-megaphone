@@ -16,18 +16,22 @@ import {
   Gauge
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { translations, SupportedLanguage } from '../i18n/translations';
 
 interface FullscreenDisplayProps {
   config: BannerConfig;
   onClose: () => void;
   onUpdateConfig: (partial: Partial<BannerConfig>) => void;
+  lang?: SupportedLanguage;
 }
 
 export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
   config,
   onClose,
   onUpdateConfig,
+  lang = 'zh-TW',
 }) => {
+  const t = translations[lang];
   const [isPaused, setIsPaused] = useState(false);
   const [showHUD, setShowHUD] = useState(true);
   const [isForcedLandscape, setIsForcedLandscape] = useState(false);
@@ -130,14 +134,14 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
         <div className="flex items-center justify-between pointer-events-auto">
           <div className="flex items-center gap-2 bg-zinc-900/85 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-700/60 text-xs text-zinc-300 shadow-xl">
             <span className={`w-2 h-2 rounded-full ${isLocked ? 'bg-emerald-400' : 'bg-zinc-500'}`} />
-            <span>{isLocked ? '螢幕常亮已開啟' : '手持應援中'}</span>
+            <span>{isLocked ? t.screenAlwaysOn : t.holdingSign}</span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={handleConfettiCheer}
               className="p-2.5 rounded-full bg-pink-600/90 hover:bg-pink-500 text-white shadow-xl transition-transform active:scale-90"
-              title="發送彩色紙花應援"
+              title={t.confettiCheer}
             >
               <Sparkles className="w-5 h-5" />
             </button>
@@ -148,7 +152,7 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
                 setIsForcedLandscape((prev) => !prev);
               }}
               className="p-2.5 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 border border-zinc-700/60 shadow-xl transition-transform active:scale-90"
-              title="切換強制橫向 (免翻轉)"
+              title={t.toggleLandscape}
             >
               <RotateCw className="w-5 h-5" />
             </button>
@@ -159,7 +163,7 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
                 onClose();
               }}
               className="p-2.5 rounded-full bg-red-600/90 hover:bg-red-500 text-white shadow-xl transition-transform active:scale-90"
-              title="退出全螢幕"
+              title={t.exitFullscreen}
             >
               <X className="w-5 h-5" />
             </button>
@@ -175,7 +179,7 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
               setIsPaused((prev) => !prev);
             }}
             className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 transition active:scale-95"
-            title={isPaused ? '播放' : '暫停'}
+            title={isPaused ? t.playing : t.paused}
           >
             {isPaused ? <Play className="w-5 h-5 fill-current" /> : <Pause className="w-5 h-5 fill-current" />}
           </button>
@@ -210,7 +214,7 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
                 ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300'
                 : 'bg-zinc-800/80 border-transparent text-zinc-400 hover:text-zinc-200'
             }`}
-            title="鏡像反轉 (自拍鏡頭或車窗專用)"
+            title={t.mirrorText}
           >
             <FlipHorizontal className="w-4 h-4" />
           </button>
@@ -226,7 +230,7 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
                 ? 'bg-amber-500/20 border-amber-500 text-amber-300 animate-pulse'
                 : 'bg-zinc-800/80 border-transparent text-zinc-400 hover:text-zinc-200'
             }`}
-            title="閃爍暴閃 (現場打 Call 節奏)"
+            title={t.strobeFlash}
           >
             <Zap className="w-4 h-4" />
           </button>

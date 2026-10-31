@@ -12,43 +12,47 @@ import {
   Flame,
   Grid
 } from 'lucide-react';
+import { translations, SupportedLanguage } from '../i18n/translations';
 
 interface EditorControlsProps {
   config: BannerConfig;
   onChange: (partial: Partial<BannerConfig>) => void;
+  lang?: SupportedLanguage;
 }
 
-export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange }) => {
+export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange, lang = 'zh-TW' }) => {
+  const t = translations[lang];
+
   const colorPresets: { id: ColorPresetId; label: string; preview: string; color: string }[] = [
-    { id: 'amber-gold', label: '琥珀金', preview: 'bg-gradient-to-r from-amber-400 to-yellow-500', color: '#f59e0b' },
-    { id: 'rainbow', label: '炫彩虹', preview: 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500', color: '#a855f7' },
-    { id: 'hot-pink', label: '應援粉', preview: 'bg-gradient-to-r from-pink-500 to-rose-400', color: '#ec4899' },
-    { id: 'cyber-cyan', label: '賽博青', preview: 'bg-gradient-to-r from-cyan-400 to-blue-500', color: '#06b6d4' },
-    { id: 'electric-lime', label: '螢光綠', preview: 'bg-gradient-to-r from-lime-400 to-emerald-400', color: '#84cc16' },
-    { id: 'police-strobe', label: '紅白暴閃', preview: 'bg-gradient-to-r from-red-500 to-blue-600', color: '#ef4444' },
-    { id: 'pure-white', label: '純白晶', preview: 'bg-white', color: '#ffffff' },
+    { id: 'amber-gold', label: t.colorAmber, preview: 'bg-gradient-to-r from-amber-400 to-yellow-500', color: '#f59e0b' },
+    { id: 'rainbow', label: t.colorRainbow, preview: 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500', color: '#a855f7' },
+    { id: 'hot-pink', label: t.colorPink, preview: 'bg-gradient-to-r from-pink-500 to-rose-400', color: '#ec4899' },
+    { id: 'cyber-cyan', label: t.colorCyan, preview: 'bg-gradient-to-r from-cyan-400 to-blue-500', color: '#06b6d4' },
+    { id: 'electric-lime', label: t.colorLime, preview: 'bg-gradient-to-r from-lime-400 to-emerald-400', color: '#84cc16' },
+    { id: 'police-strobe', label: t.colorPolice, preview: 'bg-gradient-to-r from-red-500 to-blue-600', color: '#ef4444' },
+    { id: 'pure-white', label: t.colorWhite, preview: 'bg-white', color: '#ffffff' },
   ];
 
   const renderModes: { id: RenderMode; label: string; desc: string }[] = [
-    { id: 'led-matrix', label: '擬真點陣', desc: '真實 LED 發光二極體' },
-    { id: 'neon-glow', label: '炫目霓虹', desc: '強烈光暈擴散' },
-    { id: 'pixel-art', label: '復古像素', desc: '8-bit 電子螢幕' },
-    { id: 'clean', label: '清晰極簡', desc: '超遠距離高對比' },
+    { id: 'led-matrix', label: t.styleLedMatrix, desc: 'LED Matrix' },
+    { id: 'neon-glow', label: t.styleNeonGlow, desc: 'Neon Tube' },
+    { id: 'pixel-art', label: t.stylePixelArt, desc: '8-Bit Retro' },
+    { id: 'clean', label: t.styleClean, desc: 'Ultra Contrast' },
   ];
 
   const directions: { id: ScrollDirection; label: string }[] = [
-    { id: 'left', label: '向左滾動 ←' },
-    { id: 'right', label: '向右滾動 →' },
-    { id: 'static', label: '靜止居中 ⏹' },
-    { id: 'blink', label: '原地閃爍 ⚡' },
-    { id: 'bounce', label: '左右彈跳 ↔' },
+    { id: 'left', label: `${t.dirLeft} ←` },
+    { id: 'right', label: `${t.dirRight} →` },
+    { id: 'static', label: `${t.dirStatic} ⏹` },
+    { id: 'blink', label: `${t.dirBlink} ⚡` },
+    { id: 'bounce', label: `${t.dirBounce} ↔` },
   ];
 
   const fonts: { id: FontStyle; label: string; sample: string }[] = [
-    { id: 'Orbitron', label: '數位數碼 (Orbitron)', sample: '123' },
-    { id: 'Noto Sans TC', label: '粗體黑體 (Noto Bold)', sample: '中' },
-    { id: 'DotGothic16', label: '點陣字體 (DotGothic)', sample: '點' },
-    { id: 'VT323', label: '復古終端 (VT323)', sample: 'A' },
+    { id: 'Orbitron', label: 'Orbitron (Digital)', sample: '123' },
+    { id: 'Noto Sans TC', label: 'Noto Sans (Bold)', sample: 'Aa' },
+    { id: 'DotGothic16', label: 'DotGothic (Pixel)', sample: '88' },
+    { id: 'VT323', label: 'VT323 (Retro Terminal)', sample: '><' },
   ];
 
   return (

@@ -1,1 +1,146 @@
-if(!self.define){let e,c={};const i=(i,n)=>(i=new URL(i+".js",n).href,c[i]||new Promise(c=>{if("document"in self){const e=document.createElement("script");e.src=i,e.onload=c,document.head.appendChild(e)}else e=i,importScripts(i),c()}).then(()=>{let e=c[i];if(!e)throw new Error(`Module ${i} didn’t register its module`);return e}));self.define=(n,s)=>{const r=e||("document"in self?document.currentScript.src:"")||location.href;if(c[r])return;let o={};const l=e=>i(e,r),f={module:{uri:r},exports:o,require:l};c[r]=Promise.all(n.map(e=>f[e]||l(e))).then(e=>(s(...e),o))}}define(["./workbox-9c191d2f"],function(e){"use strict";self.skipWaiting(),e.clientsClaim(),e.precacheAndRoute([{url:"registerSW.js",revision:"402b66900e731ca748771b6fc5e7a068"},{url:"pwa-maskable-512x512.png",revision:"cdf205d40c6e8f7370653c64c0864fa6"},{url:"pwa-512x512.png",revision:"c6f367a99e98c8f31dac8d4b36aa5853"},{url:"pwa-192x192.png",revision:"810c1501e3be2f0bc3cc91906fec5eeb"},{url:"index.html",revision:"6f5bbfdf3ca9c21afda6e9a1231f504b"},{url:"icon.svg",revision:"db3e3e4cc32fd25e04671caec4cb04e8"},{url:"favicon.ico",revision:"7502780ce12b985ef93e4731f1283686"},{url:"apple-touch-icon.png",revision:"d6cee04940beb06fa33cbce2ab6f5c13"},{url:"assets/polyfills-legacy-OfrgH0eQ.js",revision:null},{url:"assets/index-legacy-Dmegi7WH.js",revision:null},{url:"assets/index-avQNUhW5.css",revision:null},{url:"assets/index-DTnz7RGD.js",revision:null},{url:"apple-touch-icon.png",revision:"d6cee04940beb06fa33cbce2ab6f5c13"},{url:"favicon.ico",revision:"7502780ce12b985ef93e4731f1283686"},{url:"icon.svg",revision:"db3e3e4cc32fd25e04671caec4cb04e8"},{url:"pwa-192x192.png",revision:"810c1501e3be2f0bc3cc91906fec5eeb"},{url:"pwa-512x512.png",revision:"c6f367a99e98c8f31dac8d4b36aa5853"},{url:"pwa-maskable-512x512.png",revision:"cdf205d40c6e8f7370653c64c0864fa6"},{url:"manifest.webmanifest",revision:"f2d557dc544fd8a57ac4f0b3ca073b3d"}],{}),e.cleanupOutdatedCaches(),e.registerRoute(new e.NavigationRoute(e.createHandlerBoundToURL("index.html")))});
+/**
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// If the loader is already loaded, just stop.
+if (!self.define) {
+  let registry = {};
+
+  // Used for `eval` and `importScripts` where we can't get script URL by other means.
+  // In both cases, it's safe to use a global var because those functions are synchronous.
+  let nextDefineUri;
+
+  const singleRequire = (uri, parentUri) => {
+    uri = new URL(uri + ".js", parentUri).href;
+    return registry[uri] || (
+      
+        new Promise(resolve => {
+          if ("document" in self) {
+            const script = document.createElement("script");
+            script.src = uri;
+            script.onload = resolve;
+            document.head.appendChild(script);
+          } else {
+            nextDefineUri = uri;
+            importScripts(uri);
+            resolve();
+          }
+        })
+      
+      .then(() => {
+        let promise = registry[uri];
+        if (!promise) {
+          throw new Error(`Module ${uri} didn’t register its module`);
+        }
+        return promise;
+      })
+    );
+  };
+
+  self.define = (depsNames, factory) => {
+    const uri = nextDefineUri || ("document" in self ? document.currentScript.src : "") || location.href;
+    if (registry[uri]) {
+      // Module is already loading or loaded.
+      return;
+    }
+    let exports = {};
+    const require = depUri => singleRequire(depUri, uri);
+    const specialDeps = {
+      module: { uri },
+      exports,
+      require
+    };
+    registry[uri] = Promise.all(depsNames.map(
+      depName => specialDeps[depName] || require(depName)
+    )).then(deps => {
+      factory(...deps);
+      return exports;
+    });
+  };
+}
+define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
+
+  self.skipWaiting();
+  workbox.clientsClaim();
+  /**
+   * The precacheAndRoute() method efficiently caches and responds to
+   * requests for URLs in the manifest.
+   * See https://goo.gl/S9QRab
+   */
+  workbox.precacheAndRoute([{
+    "url": "registerSW.js",
+    "revision": "402b66900e731ca748771b6fc5e7a068"
+  }, {
+    "url": "pwa-maskable-512x512.png",
+    "revision": "cdf205d40c6e8f7370653c64c0864fa6"
+  }, {
+    "url": "pwa-512x512.png",
+    "revision": "c6f367a99e98c8f31dac8d4b36aa5853"
+  }, {
+    "url": "pwa-192x192.png",
+    "revision": "810c1501e3be2f0bc3cc91906fec5eeb"
+  }, {
+    "url": "privacy.html",
+    "revision": "72d69bfa7a14bc806a69b49c45b67963"
+  }, {
+    "url": "privacy-policy.html",
+    "revision": "72d69bfa7a14bc806a69b49c45b67963"
+  }, {
+    "url": "index.html",
+    "revision": "f9984d52b637ba8b17f0435cfdf1b1a5"
+  }, {
+    "url": "icon.svg",
+    "revision": "db3e3e4cc32fd25e04671caec4cb04e8"
+  }, {
+    "url": "favicon.ico",
+    "revision": "7502780ce12b985ef93e4731f1283686"
+  }, {
+    "url": "apple-touch-icon.png",
+    "revision": "d6cee04940beb06fa33cbce2ab6f5c13"
+  }, {
+    "url": "assets/polyfills-legacy-BYfshdqB.js",
+    "revision": null
+  }, {
+    "url": "assets/index-legacy-uI2xDDXD.js",
+    "revision": null
+  }, {
+    "url": "assets/index-PhVE9x-S.css",
+    "revision": null
+  }, {
+    "url": "assets/index-NT439ziV.js",
+    "revision": null
+  }, {
+    "url": "apple-touch-icon.png",
+    "revision": "d6cee04940beb06fa33cbce2ab6f5c13"
+  }, {
+    "url": "favicon.ico",
+    "revision": "7502780ce12b985ef93e4731f1283686"
+  }, {
+    "url": "icon.svg",
+    "revision": "db3e3e4cc32fd25e04671caec4cb04e8"
+  }, {
+    "url": "pwa-192x192.png",
+    "revision": "810c1501e3be2f0bc3cc91906fec5eeb"
+  }, {
+    "url": "pwa-512x512.png",
+    "revision": "c6f367a99e98c8f31dac8d4b36aa5853"
+  }, {
+    "url": "pwa-maskable-512x512.png",
+    "revision": "cdf205d40c6e8f7370653c64c0864fa6"
+  }, {
+    "url": "manifest.webmanifest",
+    "revision": "f2d557dc544fd8a57ac4f0b3ca073b3d"
+  }], {});
+  workbox.cleanupOutdatedCaches();
+  workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html")));
+
+}));

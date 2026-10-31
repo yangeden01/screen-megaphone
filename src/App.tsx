@@ -19,8 +19,10 @@ import {
   Share2,
   Play,
   RotateCcw,
-  Check
+  Check,
+  Globe
 } from 'lucide-react';
+import { translations, detectBrowserLanguage, SupportedLanguage } from './i18n/translations';
 
 const INITIAL_CONFIG: BannerConfig = {
   id: 'current',
@@ -65,6 +67,25 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'editor' | 'templates' | 'saved'>('editor');
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
+
+  const [currentLang, setCurrentLang] = useState<SupportedLanguage>(() => {
+    try {
+      const saved = localStorage.getItem('led_app_lang');
+      if (saved && ['zh-TW', 'en', 'ja', 'ko', 'zh-CN'].includes(saved)) {
+        return saved as SupportedLanguage;
+      }
+    } catch {}
+    return detectBrowserLanguage();
+  });
+
+  const t = translations[currentLang];
+
+  const handleLanguageChange = (lang: SupportedLanguage) => {
+    setCurrentLang(lang);
+    try {
+      localStorage.setItem('led_app_lang', lang);
+    } catch {}
+  };
 
   const handleCloseFullscreen = () => {
     setIsFullscreen(false);
@@ -212,7 +233,7 @@ export default function App() {
             </div>
           </div>
           <span className="text-base font-bold tracking-tight text-zinc-100 whitespace-nowrap">
-            螢幕大聲公
+            {t.appName}
           </span>
         </div>
 
@@ -224,7 +245,7 @@ export default function App() {
               activeTab === 'editor' ? 'text-zinc-100 font-semibold' : 'hover:text-zinc-200'
             }`}
           >
-            彈幕編輯
+            {t.tabEditor}
           </button>
           <button
             onClick={() => setActiveTab('templates')}
@@ -232,7 +253,7 @@ export default function App() {
               activeTab === 'templates' ? 'text-zinc-100 font-semibold' : 'hover:text-zinc-200'
             }`}
           >
-            應援範本
+            {t.tabTemplates}
           </button>
           <button
             onClick={() => setActiveTab('saved')}
@@ -240,27 +261,44 @@ export default function App() {
               activeTab === 'saved' ? 'text-zinc-100 font-semibold' : 'hover:text-zinc-200'
             }`}
           >
-            我的收藏
+            {t.tabSaved}
           </button>
           <button
             onClick={() => setIsPublishModalOpen(true)}
             className="text-pink-400 hover:text-pink-300 transition-colors whitespace-nowrap shrink-0 font-medium flex items-center gap-1"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            上架機會與打包分析
+            {t.tabMonetization}
           </button>
         </nav>
 
-        {/* Zone 3: Primary action + PWA Install */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        {/* Zone 3: Primary action + Language Switcher + PWA Install */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Language Selector */}
+          <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-700/80 rounded-xl px-2 py-1.5 shadow-sm">
+            <Globe className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+            <select
+              value={currentLang}
+              onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
+              aria-label={t.switchLanguage}
+              className="bg-transparent text-xs text-zinc-200 focus:outline-none cursor-pointer pr-1"
+            >
+              <option value="zh-TW" className="bg-zinc-900 text-zinc-100">繁體中文</option>
+              <option value="en" className="bg-zinc-900 text-zinc-100">English</option>
+              <option value="ja" className="bg-zinc-900 text-zinc-100">日本語</option>
+              <option value="ko" className="bg-zinc-900 text-zinc-100">한국어</option>
+              <option value="zh-CN" className="bg-zinc-900 text-zinc-100">简体中文</option>
+            </select>
+          </div>
+
           <PWAInstallButton />
 
           <button
             onClick={() => setIsFullscreen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white text-xs font-semibold shadow-lg shadow-pink-600/25 transition active:scale-95 whitespace-nowrap shrink-0"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white text-xs font-semibold shadow-lg shadow-pink-600/25 transition active:scale-95 whitespace-nowrap shrink-0"
           >
             <Maximize2 className="w-3.5 h-3.5" />
-            <span>開啟全螢幕</span>
+            <span>{t.openFullscreen}</span>
           </button>
         </div>
       </header>
@@ -272,24 +310,24 @@ export default function App() {
           <div className="flex items-center justify-between text-xs text-zinc-400">
             <span className="flex items-center gap-1.5 font-medium text-zinc-300">
               <Smartphone className="w-3.5 h-3.5 text-pink-400" />
-              即時雙向預覽 (點擊畫面可暫停 / 播放)
+              {t.previewTitle}
             </span>
             <div className="flex items-center gap-3">
               <button
                 onClick={handleShareLink}
                 className="hover:text-zinc-200 flex items-center gap-1 transition"
-                title="複製彈幕分享連結"
+                title={t.shareBanner}
               >
                 {copiedShare ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
-                <span>{copiedShare ? '已複製' : '分享'}</span>
+                <span>{copiedShare ? t.copied : t.shareBanner}</span>
               </button>
               <button
                 onClick={() => setConfig(INITIAL_CONFIG)}
                 className="hover:text-zinc-200 flex items-center gap-1 transition"
-                title="重設預設值"
+                title={t.reset}
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>重設</span>
+                <span>{t.reset}</span>
               </button>
             </div>
           </div>
@@ -355,7 +393,7 @@ export default function App() {
         {/* Tab Content Panels */}
         <div className="bg-zinc-925/70 rounded-2xl border border-zinc-800/80 p-4 md:p-6 shadow-xl">
           {activeTab === 'editor' && (
-            <EditorControls config={config} onChange={handleUpdateConfig} />
+            <EditorControls config={config} onChange={handleUpdateConfig} lang={currentLang} />
           )}
 
           {activeTab === 'templates' && (
@@ -420,7 +458,7 @@ export default function App() {
           className="flex-1 h-11 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-pink-600/25 active:scale-[0.98] transition"
         >
           <Maximize2 className="w-4 h-4" />
-          <span>立即開啟全螢幕手持應援</span>
+          <span>{t.openFullscreen}</span>
         </button>
       </div>
 
@@ -430,6 +468,7 @@ export default function App() {
           config={config}
           onClose={handleCloseFullscreen}
           onUpdateConfig={handleUpdateConfig}
+          lang={currentLang}
         />
       )}
 
