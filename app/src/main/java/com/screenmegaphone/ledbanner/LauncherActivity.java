@@ -3,16 +3,24 @@ package com.screenmegaphone.ledbanner;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.ConsoleMessage;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import androidx.webkit.WebViewAssetLoader;
 
 public class LauncherActivity extends Activity {
+    private static final String TAG = "ScreenMegaphone";
     private WebView webView;
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -20,7 +28,7 @@ public class LauncherActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Keep screen awake for concert and event use
+        // Keep screen awake permanently for concert and event use
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // Immersive full-screen display without title bar
@@ -32,9 +40,14 @@ public class LauncherActivity extends Activity {
 
         hideSystemUI();
 
-        // Initialize embedded WebView with hardware acceleration
+        // Use Google official WebViewAssetLoader to safely load local assets via HTTPS virtual domain
+        // This solves the Chromium file:/// CORS restriction for modern ES modules
+        final WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder()
+            .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+            .build();
+
         webView = new WebView(this);
-        webView.setBackgroundColor(Color.BLACK);
+        webView.setBackgroundColor(Color.parseColor("#09090b"));
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -42,27 +55,50 @@ public class LauncherActivity extends Activity {
         settings.setDatabaseEnabled(true);
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
+        settings.setAllowFileAccessFromFileURLs(true);
+        settings.setAllowUniversalAccessFromFileURLs(true);
         settings.setUseWideViewPort(true);
         settings.setLoadWithOverviewMode(true);
-        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
-
-        // Support modern zoom/viewport behaviors
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
-        webView.setWebViewClient(new WebViewClient() {
+        webView.setWebChromeClient(new WebChromeClient() {
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                if (url.startsWith("file://") || url.startsWith("https://")) {
-                    view.loadUrl(url);
-                    return true;
-                }
-                return false;
+            public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                Log.d(TAG, "[Console] " + consoleMessage.message() + " (" + consoleMessage.sourceId() + ":" + consoleMessage.lineNumber() + ")");
+                return true;
             }
         });
 
-        // Load the bundled offline web app directly from APK assets
-        webView.loadUrl("file:///android_asset/web/index.html");
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                WebResourceResponse response = assetLoader.shouldInterceptRequest(request.getUrl());
+                if (response != null) {
+                    return response;
+                }
+                return super.shouldInterceptRequest(view, request);
+            }
+
+            @SuppressWarnings("deprecation")
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+                WebResourceResponse response = assetLoader.shouldInterceptRequest(Uri.parse(url));
+                if (response != null) {
+                    return response;
+                }
+                return super.shouldInterceptRequest(view, url);
+            }
+
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                Log.e(TAG, "WebView error: " + description + " for " + failingUrl);
+            }
+        });
+
+        // Load virtual https URL served directly from APK assets folder
+        webView.loadUrl("https://appassets.androidplatform.net/assets/web/index.html");
 
         setContentView(webView);
     }
