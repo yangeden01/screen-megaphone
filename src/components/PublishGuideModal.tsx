@@ -19,7 +19,7 @@ interface PublishGuideModalProps {
 }
 
 export const PublishGuideModal: React.FC<PublishGuideModalProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'opportunity' | 'twa' | 'checklist' | 'monetization' | 'downloads'>('opportunity');
+  const [activeTab, setActiveTab] = useState<'opportunity' | 'twa' | 'checklist' | 'monetization' | 'downloads' | 'testers'>('testers');
   const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -40,6 +40,38 @@ bubblewrap init --manifest https://你的網域/manifest.webmanifest
 bubblewrap build
 
 # 產出的 app-release-signed.aab 即可直接上傳至 Google Play Console！`;
+
+  const testerPost = `【互測互載 14天】Google Play 個人開發者 20人封測互相支援！《螢幕大聲公》必回載並保留 14 天！
+
+各位開發者夥伴大家好！
+
+因應 Google Play 個人帳號上架政策，我的新 App《螢幕大聲公 - 超亮 LED 手持彈幕》目前正在進行封閉測試，急需 20 位熱心夥伴協助測試並保留 14 天。
+
+只要您在底下留言貼出您的 App 連結或截圖，我保證一定「互載互測、五星好評、持續保留至少 14 天不卸載」！
+
+---
+
+📱 參與封測 3 步驟（請務必依序點擊）：
+
+1. 第一步：加入 Google 測試群組（取得測試資格）
+👉 https://groups.google.com/g/screen-megaphone-testers
+(點進去登入 Google 帳號，並點擊「加入群組」)
+
+2. 第二步：點擊測試邀請網址（點擊「成為測試人員」）
+👉 https://play.google.com/apps/testing/com.screenmegaphone.ledbanner
+(⚠️ 非常重要！請務必點進去並按下【成為測試人員】，否則商店會顯示「找不到項目」)
+
+3. 第三步：前往 Google Play 商店下載安裝
+👉 https://play.google.com/store/apps/details?id=com.screenmegaphone.ledbanner
+(或由第二步網頁中的「在 Google Play 下載」直接跳轉安裝)
+
+---
+
+🤝 誠信互助承諾：
+- 留言後我會在 12 小時內完成下載您的 App、測試並在留言區回傳手機安裝截圖。
+- 測試期間絕不卸載，每天主動開起來幫忙維持活躍度，協助大家一起順利通過 14 天門檻、成功正式上架！
+
+感謝大家互相幫忙，祝大家的 App 都能順利過審上線！🎉`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
@@ -119,6 +151,16 @@ bubblewrap build
           >
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             5. 安裝包與 APK 畫面說明
+          </button>
+          <button
+            onClick={() => setActiveTab('testers')}
+            className={`pb-2.5 text-xs font-bold border-b-2 transition whitespace-nowrap flex items-center gap-1.5 ${
+              activeTab === 'testers'
+                ? 'border-amber-400 text-amber-300'
+                : 'border-transparent text-amber-400/80 hover:text-amber-300'
+            }`}
+          >
+            🔥 6. 20人封測招募文案（一鍵複製）
           </button>
         </div>
 
@@ -415,6 +457,92 @@ bubblewrap build
                     我們已在 <code>/.well-known/assetlinks.json</code> 完成與 APK 數位簽名（SHA-256）的綁定，當 APK 在支援的 Android 手機上執行時，將直接以純原生全螢幕呈現，不會帶有任何 Chrome 瀏覽器頂部網址列。
                   </p>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 6: TESTERS RECRUITMENT POST */}
+          {activeTab === 'testers' && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-amber-300 flex items-center gap-2">
+                    🔥 20人封測互相支援招募文案（已校正防呆連結）
+                  </h3>
+                  <p className="text-xs text-zinc-400 leading-relaxed">
+                    此文案已包含「先加群組 ➔ 再點受邀啟用 ➔ 最後開商店下載」的標準 3 步驟，可避免夥伴遇到「找不到項目」的錯誤。
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleCopy(testerPost, 'full-post')}
+                  className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 shrink-0 transition shadow-lg ${
+                    copiedSnippet === 'full-post'
+                      ? 'bg-emerald-600 text-white shadow-emerald-500/20'
+                      : 'bg-amber-500 hover:bg-amber-400 text-black shadow-amber-500/20'
+                  }`}
+                >
+                  {copiedSnippet === 'full-post' ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      已複製成功！
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      一鍵複製完整貼文
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Individual quick copy links */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                <div className="p-3 rounded-xl bg-zinc-800/40 border border-zinc-800 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="text-[11px] font-semibold text-zinc-400">步驟 1：測試群組網址</div>
+                    <div className="text-xs text-zinc-200 truncate">screen-megaphone-testers</div>
+                  </div>
+                  <button
+                    onClick={() => handleCopy('https://groups.google.com/g/screen-megaphone-testers', 'link-1')}
+                    className="p-1.5 rounded-lg bg-zinc-700/60 hover:bg-zinc-700 text-zinc-300 transition shrink-0"
+                    title="複製群組連結"
+                  >
+                    {copiedSnippet === 'link-1' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+
+                <div className="p-3 rounded-xl bg-zinc-800/40 border border-zinc-800 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="text-[11px] font-semibold text-amber-400">步驟 2：測試受邀網址 (必點)</div>
+                    <div className="text-xs text-zinc-200 truncate">apps/testing/com.screenmegaphone...</div>
+                  </div>
+                  <button
+                    onClick={() => handleCopy('https://play.google.com/apps/testing/com.screenmegaphone.ledbanner', 'link-2')}
+                    className="p-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 transition shrink-0"
+                    title="複製受邀啟用連結"
+                  >
+                    {copiedSnippet === 'link-2' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+
+                <div className="p-3 rounded-xl bg-zinc-800/40 border border-zinc-800 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="text-[11px] font-semibold text-zinc-400">步驟 3：商店下載網址</div>
+                    <div className="text-xs text-zinc-200 truncate">store/apps/details?id=...</div>
+                  </div>
+                  <button
+                    onClick={() => handleCopy('https://play.google.com/store/apps/details?id=com.screenmegaphone.ledbanner', 'link-3')}
+                    className="p-1.5 rounded-lg bg-zinc-700/60 hover:bg-zinc-700 text-zinc-300 transition shrink-0"
+                    title="複製商店下載連結"
+                  >
+                    {copiedSnippet === 'link-3' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Text Area Preview */}
+              <div className="relative rounded-xl border border-zinc-800 bg-zinc-950 p-4 font-mono text-xs text-zinc-300 whitespace-pre-wrap leading-relaxed max-h-72 overflow-y-auto">
+                {testerPost}
               </div>
             </div>
           )}
