@@ -152,7 +152,13 @@ android {
     }
     signingConfigs {
         release {
-            def keystoreFile = file('../android.keystore')
+            def keystoreFile = file('../release.keystore')
+            if (!keystoreFile.exists()) {
+                keystoreFile = file('../../release.keystore')
+            }
+            if (!keystoreFile.exists()) {
+                keystoreFile = file('../android.keystore')
+            }
             if (!keystoreFile.exists()) {
                 keystoreFile = file('../../android.keystore')
             }
