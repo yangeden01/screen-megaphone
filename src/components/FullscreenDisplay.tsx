@@ -104,12 +104,12 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
       onClick={handleScreenClick}
       onMouseMove={resetHideTimer}
       onTouchStart={resetHideTimer}
-      className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden cursor-pointer select-none"
+      className="fixed inset-0 w-screen h-screen z-50 bg-black flex items-center justify-center overflow-hidden cursor-pointer select-none m-0 p-0"
       style={{ filter: `brightness(${brightness}%)` }}
     >
       {/* Marquee Display Canvas Container */}
       <div
-        className={`w-full h-full transition-transform duration-300 ${
+        className={`absolute inset-0 w-full h-full transition-transform duration-300 ${
           isForcedLandscape ? 'rotate-90 origin-center scale-[1.3]' : ''
         }`}
       >

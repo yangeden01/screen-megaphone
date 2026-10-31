@@ -45,10 +45,20 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
     if (containerRef.current) {
       observer.observe(containerRef.current);
     }
-    window.addEventListener('resize', updateSize);
+
+    const handleOrientation = () => {
+      updateSize();
+      setTimeout(updateSize, 80);
+      setTimeout(updateSize, 200);
+      setTimeout(updateSize, 400);
+    };
+
+    window.addEventListener('resize', handleOrientation);
+    window.addEventListener('orientationchange', handleOrientation);
     return () => {
       observer.disconnect();
-      window.removeEventListener('resize', updateSize);
+      window.removeEventListener('resize', handleOrientation);
+      window.removeEventListener('orientationchange', handleOrientation);
     };
   }, []);
 

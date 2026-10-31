@@ -72,6 +72,30 @@ export default function App() {
     setShowInterstitialAd(true);
   };
 
+  // Automatically switch to full-screen display when phone is turned horizontally (landscape)
+  useEffect(() => {
+    const handleOrientation = () => {
+      const isLandscape = window.innerWidth > window.innerHeight;
+      if (isLandscape) {
+        setIsFullscreen(true);
+      }
+    };
+
+    window.addEventListener('resize', handleOrientation);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(handleOrientation, 150);
+      setTimeout(handleOrientation, 350);
+    });
+
+    if (window.innerWidth > window.innerHeight) {
+      setIsFullscreen(true);
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleOrientation);
+    };
+  }, []);
+
   // Saved banners list
   const [savedList, setSavedList] = useState<BannerConfig[]>(() => {
     try {

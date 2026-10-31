@@ -76,6 +76,8 @@
 
         <activity android:name="LauncherActivity"
             android:alwaysRetainTaskState="true"
+            android:screenOrientation="sensor"
+            android:windowLayoutInDisplayCutoutMode="shortEdges"
             android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout"
             android:hardwareAccelerated="true"
             android:label="@string/launcherName"

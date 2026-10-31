@@ -2,12 +2,14 @@ package com.screenmegaphone.ledbanner;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
@@ -28,7 +30,7 @@ public class LauncherActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Keep screen awake permanently for concert and event use
+        // Keep screen awake permanently for concert and event marquee use
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // Immersive full-screen display without title bar
@@ -38,16 +40,31 @@ public class LauncherActivity extends Activity {
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
 
+        // Allow drawing edge-to-edge behind the camera cutout / notch in landscape mode
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            WindowManager.LayoutParams lp = getWindow().getAttributes();
+            lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            getWindow().setAttributes(lp);
+        }
+
         hideSystemUI();
 
         // Use Google official WebViewAssetLoader to safely load local assets via HTTPS virtual domain
-        // This solves the Chromium file:/// CORS restriction for modern ES modules
         final WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
             .build();
 
         webView = new WebView(this);
         webView.setBackgroundColor(Color.parseColor("#09090b"));
+
+        // Match parent dimensions completely without borders or padding
+        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        );
+        webView.setLayoutParams(layoutParams);
+        webView.setPadding(0, 0, 0, 0);
+        webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -115,6 +132,12 @@ public class LauncherActivity extends Activity {
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
             );
         }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        hideSystemUI();
     }
 
     @Override
