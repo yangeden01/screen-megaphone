@@ -427,7 +427,7 @@ Thank you all for the mutual support! Let's get our apps published together! ðŸŽ
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <a
-                        href="https://github.com/yangeden01/screen-megaphone/actions/runs/41126527558"
+                        href="https://github.com/yangeden01/screen-megaphone/actions/runs/42486453974"
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-semibold text-xs transition"
