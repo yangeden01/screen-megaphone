@@ -40,7 +40,8 @@ export interface Translations {
   displayStyle: string;
   styleLedMatrix: string;
   styleNeonGlow: string;
-  stylePixelArt: string;
+  styleOutline: string;
+  stylePixelArt?: string;
   styleClean: string;
   // Colors & Presets
   colorPreset: string;
@@ -54,6 +55,10 @@ export interface Translations {
   colorCustom: string;
   // Fonts
   fontFamily: string;
+  fontHeavyBold: string;
+  fontCalligraphy: string;
+  fontCutePop: string;
+  fontCyberTech: string;
   // Toggles
   mirrorText: string;
   blinkText: string;
@@ -77,8 +82,53 @@ export interface Translations {
   catDaily: string;
   catLove: string;
   applyTemplate: string;
+  catAll: string;
+  // Dynamic UI elements
+  fullCheerBanner: string;
+  clear: string;
+  charsCount: string;
+  bannerContent: string;
+  customColorHint: string;
+  rainbowActive: string;
+  fontStyles: string;
+  crazyBlink: string;
+  mirrorFlip: string;
+  neonBorder: string;
+  toggleOn: string;
+  toggleOff: string;
+  mirrorOn: string;
+  mirrorOff: string;
   // Language Switcher
   switchLanguage: string;
+  // Saved Banners
+  savedTitle: string;
+  alreadySaved: string;
+  saveCurrentBanner: string;
+  emptySaved: string;
+  noText: string;
+  loadAndUse: string;
+  delete: string;
+  speedLabel: string;
+  // PWA Install
+  installApp: string;
+  addToHomeScreen: string;
+  installOnIOS: string;
+  iosStep1: string;
+  iosStep2: string;
+  gotIt: string;
+  // Interstitial Ad
+  interstitialAd: string;
+  closeInSeconds: string;
+  skipAd: string;
+  vipNoAds: string;
+  adDemoDesc: string;
+  closeAdReturn: string;
+  waitSeconds: string;
+  // Bottom Card
+  marketCardTitle: string;
+  marketCardBadge: string;
+  marketCardDesc: string;
+  marketCardBtn: string;
 }
 
 export const translations: Record<SupportedLanguage, Translations> = {
@@ -118,7 +168,8 @@ export const translations: Record<SupportedLanguage, Translations> = {
     displayStyle: '渲染風格模式',
     styleLedMatrix: '擬真點陣 (LED)',
     styleNeonGlow: '霓虹夜光 (Neon)',
-    stylePixelArt: '像素點陣 (Pixel)',
+    styleOutline: '雙色立體描邊 (3D Outline)',
+    stylePixelArt: '雙色立體描邊 (3D Outline)',
     styleClean: '純淨平滑 (Clean)',
     colorPreset: '色彩主題預設',
     colorAmber: '暖琥珀金',
@@ -130,6 +181,10 @@ export const translations: Record<SupportedLanguage, Translations> = {
     colorWhite: '冷光極致白',
     colorCustom: '自訂色彩',
     fontFamily: '顯示字體',
+    fontHeavyBold: '應援特黑體 (Heavy)',
+    fontCalligraphy: '霸氣國潮書 (Brush)',
+    fontCutePop: '甜萌元氣圓 (Cute)',
+    fontCyberTech: '賽博極速 (Cyber)',
     mirrorText: '鏡像反轉 (自拍鏡頭或車窗專用)',
     blinkText: '閃爍特效',
     borderFrame: '點陣外邊框',
@@ -150,7 +205,47 @@ export const translations: Record<SupportedLanguage, Translations> = {
     catDaily: '日常',
     catLove: '表白',
     applyTemplate: '套用此範本',
+    catAll: '全部',
+    fullCheerBanner: '滿版應援',
+    clear: '清空',
+    charsCount: '字',
+    bannerContent: '彈幕內容 (支援文字與 Emoji)',
+    customColorHint: '點擊色塊自選任意色彩',
+    rainbowActive: '🌈 動態彩虹中',
+    fontStyles: 'LED 字體風格',
+    crazyBlink: '狂歡暴閃',
+    mirrorFlip: '鏡像反轉',
+    neonBorder: '霓虹燈邊框',
+    toggleOn: '開啟',
+    toggleOff: '關閉',
+    mirrorOn: '開啟 (反字)',
+    mirrorOff: '正常',
     switchLanguage: '切換語言',
+    savedTitle: '常用彈幕收藏庫',
+    alreadySaved: '✓ 已在收藏庫',
+    saveCurrentBanner: '+ 收藏目前彈幕',
+    emptySaved: '尚無收藏的彈幕，編輯完喜歡的內容後可點擊上方按鈕收藏！',
+    noText: '(無文字)',
+    loadAndUse: '載入並使用',
+    delete: '刪除',
+    speedLabel: '速度',
+    installApp: '安裝 App 到桌面',
+    addToHomeScreen: '加到主畫面',
+    installOnIOS: '在 iPhone / iPad 上安裝',
+    iosStep1: '1. 點擊 Safari 瀏覽器底部的 「分享」 按鈕。',
+    iosStep2: '2. 向下滾動並選擇 「加入主畫面」 (Add to Home Screen)。',
+    gotIt: '我知道了',
+    interstitialAd: '全螢幕插頁廣告 (AdMob Interstitial)',
+    closeInSeconds: '秒後可關閉',
+    skipAd: '跳過廣告',
+    vipNoAds: '《螢幕大聲公》VIP 免廣告權益',
+    adDemoDesc: '【這是退出全螢幕手持模式時觸發的插頁廣告示範】\n全螢幕手持持續超過 20 秒才觸發，小於 20 秒不推廣告，避免調整參數時打擾用戶。',
+    closeAdReturn: '關閉廣告返回編輯器',
+    waitSeconds: '請稍候',
+    marketCardTitle: '想將《螢幕大聲公》上架 Google Play？',
+    marketCardBadge: '可行性 100%',
+    marketCardDesc: '《螢幕大聲公》已內建完整 PWA 規格，可透過 Google 官方 Bubblewrap 工具免寫 Java 快速打包為 AAB 上傳 Google Play Console，享有千萬級 ASO 自然搜尋流量與廣告收益！',
+    marketCardBtn: '檢視上架與變現指南 →',
   },
   'en': {
     appName: 'Screen Megaphone',
@@ -188,7 +283,8 @@ export const translations: Record<SupportedLanguage, Translations> = {
     displayStyle: 'Render Style Mode',
     styleLedMatrix: 'LED Matrix Dots',
     styleNeonGlow: 'Neon Glow',
-    stylePixelArt: 'Pixel Art',
+    styleOutline: '3D Duo Outline',
+    stylePixelArt: '3D Duo Outline',
     styleClean: 'Modern Clean',
     colorPreset: 'Color Presets',
     colorAmber: 'Amber Gold',
@@ -200,6 +296,10 @@ export const translations: Record<SupportedLanguage, Translations> = {
     colorWhite: 'Pure White',
     colorCustom: 'Custom Color',
     fontFamily: 'Display Font',
+    fontHeavyBold: 'Impact Heavy',
+    fontCalligraphy: 'Brush Calligraphy',
+    fontCutePop: 'Cute Pop',
+    fontCyberTech: 'Cyber Tech',
     mirrorText: 'Mirror Flip (Selfie / Car Window)',
     blinkText: 'Blink Flash',
     borderFrame: 'Matrix Bezel Border',
@@ -220,7 +320,47 @@ export const translations: Record<SupportedLanguage, Translations> = {
     catDaily: 'Daily',
     catLove: 'Love',
     applyTemplate: 'Apply Template',
+    catAll: 'All',
+    fullCheerBanner: 'Full Banner',
+    clear: 'Clear',
+    charsCount: 'chars',
+    bannerContent: 'Banner Text (Supports Text & Emoji)',
+    customColorHint: 'Tap color box to pick any color',
+    rainbowActive: '🌈 Animated Rainbow',
+    fontStyles: 'LED Font Style',
+    crazyBlink: 'Crazy Strobe',
+    mirrorFlip: 'Mirror Flip',
+    neonBorder: 'Neon Bezel Border',
+    toggleOn: 'ON',
+    toggleOff: 'OFF',
+    mirrorOn: 'ON (Flipped)',
+    mirrorOff: 'Normal',
     switchLanguage: 'Language',
+    savedTitle: 'Saved Banners',
+    alreadySaved: '✓ Saved in Library',
+    saveCurrentBanner: '+ Save Current Banner',
+    emptySaved: 'No saved banners yet. Click the button above to bookmark your creations!',
+    noText: '(No Text)',
+    loadAndUse: 'Load & Use',
+    delete: 'Delete',
+    speedLabel: 'Speed',
+    installApp: 'Install App',
+    addToHomeScreen: 'Add to Home Screen',
+    installOnIOS: 'Install on iPhone / iPad',
+    iosStep1: '1. Tap the Share button at the bottom of Safari.',
+    iosStep2: '2. Scroll down and tap "Add to Home Screen".',
+    gotIt: 'Got It',
+    interstitialAd: 'Fullscreen Interstitial Ad (AdMob)',
+    closeInSeconds: 's to skip',
+    skipAd: 'Skip Ad',
+    vipNoAds: 'Screen Megaphone VIP Ad-Free Access',
+    adDemoDesc: '[Demo Interstitial Ad shown after exiting full screen]\nOnly triggers when full screen exceeds 20 seconds, preventing interruptions while adjusting settings.',
+    closeAdReturn: 'Close Ad & Return to Editor',
+    waitSeconds: 'Please wait',
+    marketCardTitle: 'Publish Screen Megaphone to Google Play?',
+    marketCardBadge: '100% Ready',
+    marketCardDesc: 'Screen Megaphone is PWA-compliant and can be packaged into an Android App Bundle (.aab) via Google Bubblewrap CLI without writing Java, unlocking high organic ASO traffic and AdMob revenue!',
+    marketCardBtn: 'View Publishing & Monetization Guide →',
   },
   'ja': {
     appName: '画面メガホン',
@@ -258,7 +398,8 @@ export const translations: Record<SupportedLanguage, Translations> = {
     displayStyle: '表示スタイル',
     styleLedMatrix: 'LED ドットマトリクス',
     styleNeonGlow: 'ネオングロー (発光)',
-    stylePixelArt: 'ドット絵 (Pixel)',
+    styleOutline: '立体アウトライン (3D)',
+    stylePixelArt: '立体アウトライン (3D)',
     styleClean: 'クリーン表示',
     colorPreset: 'カラーテーマ',
     colorAmber: 'アンバーゴールド',
@@ -270,6 +411,10 @@ export const translations: Record<SupportedLanguage, Translations> = {
     colorWhite: 'ピュアホワイト',
     colorCustom: 'カスタムカラー',
     fontFamily: 'フォント選択',
+    fontHeavyBold: '応援極太ゴシック',
+    fontCalligraphy: '筆文字・書道体',
+    fontCutePop: 'ポップ丸文字',
+    fontCyberTech: 'サイバーテック',
     mirrorText: 'ミラー反転 (インカメラ・車窓用)',
     blinkText: '点滅エフェクト',
     borderFrame: 'LED 外枠フレーム',
@@ -290,7 +435,47 @@ export const translations: Record<SupportedLanguage, Translations> = {
     catDaily: '日常',
     catLove: 'メッセージ',
     applyTemplate: 'このテンプレートを適用',
+    catAll: 'すべて',
+    fullCheerBanner: '全画面応援',
+    clear: 'クリア',
+    charsCount: '文字',
+    bannerContent: 'メッセージ内容 (絵文字対応)',
+    customColorHint: 'カラーパレットから自由選択',
+    rainbowActive: '🌈 レインボー動作中',
+    fontStyles: 'フォントスタイル',
+    crazyBlink: 'ストロボ点滅',
+    mirrorFlip: 'ミラー反転',
+    neonBorder: 'ネオン外枠フレーム',
+    toggleOn: 'ON',
+    toggleOff: 'OFF',
+    mirrorOn: 'ON (反転)',
+    mirrorOff: '通常',
     switchLanguage: '言語切替',
+    savedTitle: '保存済みバナー一覧',
+    alreadySaved: '✓ 保存済み',
+    saveCurrentBanner: '+ 現在のバナーを保存',
+    emptySaved: '保存されたバナーはありません。作成したバナーを上のボタンから保存しましょう！',
+    noText: '(テキストなし)',
+    loadAndUse: '読み込んで使用',
+    delete: '削除',
+    speedLabel: '速度',
+    installApp: 'アプリをインストール',
+    addToHomeScreen: 'ホーム画面に追加',
+    installOnIOS: 'iPhone / iPad でのインストール',
+    iosStep1: '1. Safari 下部の「共有」ボタンをタップします。',
+    iosStep2: '2. 下にスクロールして「ホーム画面に追加」を選択します。',
+    gotIt: '了解しました',
+    interstitialAd: '全画面インタースティシャル広告 (AdMob)',
+    closeInSeconds: '秒後にスキップ可能',
+    skipAd: '広告をスキップ',
+    vipNoAds: '「画面メガホン」VIP 広告非表示特典',
+    adDemoDesc: '【全画面表示終了時に表示される広告デモ】\n全画面表示が20秒を超えた場合のみ表示され、パラメータ調整中の誤表示を防ぎます。',
+    closeAdReturn: '広告を閉じてエディタに戻る',
+    waitSeconds: '少々お待ちください',
+    marketCardTitle: '「画面メガホン」を Google Play に公開しますか？',
+    marketCardBadge: '即時対応 100%',
+    marketCardDesc: 'Google 公式 Bubblewrap ツールを利用することで、Java 不要で Android AAB 形式にパッケージングし、Google Play に素早く配信可能です！',
+    marketCardBtn: '配信・収益化ガイドを見る →',
   },
   'ko': {
     appName: '화면 메가폰',
@@ -328,7 +513,8 @@ export const translations: Record<SupportedLanguage, Translations> = {
     displayStyle: '표시 스타일',
     styleLedMatrix: 'LED 도트 매트릭스',
     styleNeonGlow: '네온 글로우',
-    stylePixelArt: '픽셀 아트',
+    styleOutline: '3D 입체 외곽선',
+    stylePixelArt: '3D 입체 외곽선',
     styleClean: '깔끔한 모던',
     colorPreset: '컬러 프리셋',
     colorAmber: '앰버 골드',
@@ -340,6 +526,10 @@ export const translations: Record<SupportedLanguage, Translations> = {
     colorWhite: '퓨어 화이트',
     colorCustom: '사용자 지정 색상',
     fontFamily: '글꼴',
+    fontHeavyBold: '임팩트 볼드',
+    fontCalligraphy: '붓글씨 캘리',
+    fontCutePop: '큐트 팝체',
+    fontCyberTech: '사이버 테크',
     mirrorText: '좌우 반전 (셀카 / 차창 전용)',
     blinkText: '깜빡임 효과',
     borderFrame: 'LED 베젤 테두리',
@@ -360,7 +550,47 @@ export const translations: Record<SupportedLanguage, Translations> = {
     catDaily: '일상',
     catLove: '고백/애정',
     applyTemplate: '템플릿 적용하기',
+    catAll: '전체',
+    fullCheerBanner: '전체화면 응원',
+    clear: '지우기',
+    charsCount: '자',
+    bannerContent: '전광판 문구 (텍스트 및 이모지 지원)',
+    customColorHint: '색상 상자를 눌러 자유롭게 선택',
+    rainbowActive: '🌈 레인보우 작동 중',
+    fontStyles: '글꼴 스타일',
+    crazyBlink: '광란의 점멸',
+    mirrorFlip: '좌우 반전',
+    neonBorder: '네온 테두리',
+    toggleOn: '켜짐',
+    toggleOff: '꺼짐',
+    mirrorOn: '켜짐 (반전)',
+    mirrorOff: '정상',
     switchLanguage: '언어 변경',
+    savedTitle: '저장된 전광판 보관함',
+    alreadySaved: '✓ 보관함에 저장됨',
+    saveCurrentBanner: '+ 현재 전광판 저장',
+    emptySaved: '저장된 전광판이 없습니다. 마음에 드는 문구를 작성 후 위 버튼을 눌러 저장하세요!',
+    noText: '(텍스트 없음)',
+    loadAndUse: '불러와서 사용',
+    delete: '삭제',
+    speedLabel: '속도',
+    installApp: '홈 화면에 앱 설치',
+    addToHomeScreen: '홈 화면에 추가',
+    installOnIOS: 'iPhone / iPad 에 설치하기',
+    iosStep1: '1. Safari 브라우저 하단의 [공유] 버튼을 누르세요.',
+    iosStep2: '2. 아래로 스크롤하여 [홈 화면에 추가]를 선택하세요.',
+    gotIt: '확인했습니다',
+    interstitialAd: '전면 광고 (AdMob Interstitial)',
+    closeInSeconds: '초 후 건너뛰기 가능',
+    skipAd: '광고 건너뛰기',
+    vipNoAds: '화면 메가폰 VIP 광고 제거 혜택',
+    adDemoDesc: '【전체 화면 모드 종료 시 표시되는 전면 광고 시연】\n전체 화면이 20초 이상 지속되었을 때만 노출되며, 설정 조절 중에는 광고가 뜨지 않습니다.',
+    closeAdReturn: '광고 닫고 편집기로 돌아가기',
+    waitSeconds: '잠시만 기다려주세요',
+    marketCardTitle: '‘화면 메가폰’을 Google Play에 출시하고 싶으신가요?',
+    marketCardBadge: '출시 가능성 100%',
+    marketCardDesc: '구글 공식 Bubblewrap 도구를 통해 Java 코딩 없이 Android AAB 번들로 패키징하여 Google Play Console에 즉시 배포할 수 있습니다!',
+    marketCardBtn: '출시 및 수익화 가이드 보기 →',
   },
   'zh-CN': {
     appName: '屏幕大声公',
@@ -398,7 +628,8 @@ export const translations: Record<SupportedLanguage, Translations> = {
     displayStyle: '渲染风格模式',
     styleLedMatrix: '拟真点阵 (LED)',
     styleNeonGlow: '霓虹夜光 (Neon)',
-    stylePixelArt: '像素点阵 (Pixel)',
+    styleOutline: '双色立体描边 (3D Outline)',
+    stylePixelArt: '双色立体描边 (3D Outline)',
     styleClean: '纯净平滑 (Clean)',
     colorPreset: '色彩主题预设',
     colorAmber: '暖琥珀金',
@@ -410,6 +641,10 @@ export const translations: Record<SupportedLanguage, Translations> = {
     colorWhite: '冷光极致白',
     colorCustom: '自定义色彩',
     fontFamily: '显示字体',
+    fontHeavyBold: '应援特黑体 (Heavy)',
+    fontCalligraphy: '霸气国潮书 (Brush)',
+    fontCutePop: '甜萌元气圆 (Cute)',
+    fontCyberTech: '赛博极速 (Cyber)',
     mirrorText: '镜像反转 (自拍镜头或车窗专用)',
     blinkText: '闪烁特效',
     borderFrame: '点阵外边框',
@@ -430,7 +665,47 @@ export const translations: Record<SupportedLanguage, Translations> = {
     catDaily: '日常',
     catLove: '表白',
     applyTemplate: '套用此范本',
+    catAll: '全部',
+    fullCheerBanner: '满版应援',
+    clear: '清空',
+    charsCount: '字',
+    bannerContent: '弹幕内容 (支持文字与 Emoji)',
+    customColorHint: '点击色块自选任意色彩',
+    rainbowActive: '🌈 动态彩虹中',
+    fontStyles: 'LED 字体风格',
+    crazyBlink: '狂欢暴闪',
+    mirrorFlip: '镜像反转',
+    neonBorder: '霓虹灯边框',
+    toggleOn: '开启',
+    toggleOff: '关闭',
+    mirrorOn: '开启 (反字)',
+    mirrorOff: '正常',
     switchLanguage: '切换语言',
+    savedTitle: '常用弹幕收藏库',
+    alreadySaved: '✓ 已在收藏库',
+    saveCurrentBanner: '+ 收藏当前弹幕',
+    emptySaved: '暂无收藏的弹幕，编辑完喜欢的内容后可点击上方按钮收藏！',
+    noText: '(无文字)',
+    loadAndUse: '载入并使用',
+    delete: '删除',
+    speedLabel: '速度',
+    installApp: '安装 App 到桌面',
+    addToHomeScreen: '添加到主屏幕',
+    installOnIOS: '在 iPhone / iPad 上安装',
+    iosStep1: '1. 点击 Safari 浏览器底部的「分享」按钮。',
+    iosStep2: '2. 向下滚动并选择「添加到主屏幕」 (Add to Home Screen)。',
+    gotIt: '我知道了',
+    interstitialAd: '全屏插页广告 (AdMob Interstitial)',
+    closeInSeconds: '秒后可关闭',
+    skipAd: '跳过广告',
+    vipNoAds: '《屏幕大声公》VIP 免广告权益',
+    adDemoDesc: '【这是退出全屏手持模式时触发的插页广告示范】\n全屏手持持续超过 20 秒才触发，小于 20 秒不推广告，避免调整参数时打扰用户。',
+    closeAdReturn: '关闭广告返回编辑器',
+    waitSeconds: '请稍候',
+    marketCardTitle: '想将《屏幕大声公》上架 Google Play？',
+    marketCardBadge: '可行性 100%',
+    marketCardDesc: '《屏幕大声公》已内置完整 PWA 规格，可通过 Google 官方 Bubblewrap 工具免写 Java 快速打包为 AAB 上传 Google Play Console，享有千万级 ASO 自然搜索流量与广告收益！',
+    marketCardBtn: '查看上架与变现指南 →',
   },
 };
 

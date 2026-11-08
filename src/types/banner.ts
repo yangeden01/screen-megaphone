@@ -1,8 +1,17 @@
 export type ScrollDirection = 'left' | 'right' | 'static' | 'blink' | 'bounce';
 
-export type FontStyle = 'Orbitron' | 'DotGothic16' | 'Noto Sans TC' | 'VT323';
+export type FontStyle = 
+  | 'heavy-bold' 
+  | 'calligraphy' 
+  | 'cute-pop' 
+  | 'cyber-tech' 
+  | 'Noto Sans TC' 
+  | 'Ma Shan Zheng' 
+  | 'ZCOOL KuaiLe' 
+  | 'Orbitron'
+  | string;
 
-export type RenderMode = 'led-matrix' | 'neon-glow' | 'pixel-art' | 'clean';
+export type RenderMode = 'led-matrix' | 'neon-glow' | 'outline-stroke' | 'clean' | 'pixel-art';
 
 export type ColorPresetId = 
   | 'amber-gold'

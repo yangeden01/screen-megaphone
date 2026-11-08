@@ -85,7 +85,7 @@ export const PRESET_TEMPLATES: PresetTemplate[] = [
       speed: 3,
       direction: 'static',
       renderMode: 'led-matrix',
-      fontFamily: 'DotGothic16',
+      fontFamily: 'Noto Sans TC',
       glowIntensity: 8,
       dotSize: 8,
       dotGap: 2,
@@ -147,21 +147,33 @@ export const PRESET_TEMPLATES: PresetTemplate[] = [
   },
 ];
 
+import { translations, SupportedLanguage } from '../i18n/translations';
+
 interface TemplatePickerProps {
   onSelectTemplate: (template: PresetTemplate) => void;
   activeTemplateId?: string;
+  lang?: SupportedLanguage;
 }
 
 export const TemplatePicker: React.FC<TemplatePickerProps> = ({
   onSelectTemplate,
   activeTemplateId,
+  lang = 'zh-TW',
 }) => {
-  const [selectedCategory, setSelectedCategory] = React.useState<string>('全部');
+  const t = translations[lang];
+  const [selectedCategory, setSelectedCategory] = React.useState<string>('all');
 
-  const categories = ['全部', '應援', '接機', '派對', '日常', '表白'];
+  const categories = [
+    { id: 'all', label: t.catAll },
+    { id: '應援', label: t.catConcert },
+    { id: '接機', label: t.catAirport },
+    { id: '派對', label: t.catParty },
+    { id: '日常', label: t.catDaily },
+    { id: '表白', label: t.catLove },
+  ];
 
   const filtered = PRESET_TEMPLATES.filter(
-    (t) => selectedCategory === '全部' || t.category === selectedCategory
+    (item) => selectedCategory === 'all' || item.category === selectedCategory
   );
 
   const getCategoryIcon = (cat: string) => {
@@ -175,33 +187,53 @@ export const TemplatePicker: React.FC<TemplatePickerProps> = ({
     }
   };
 
+  const getCategoryLabel = (cat: string) => {
+    switch (cat) {
+      case '應援': return t.catConcert;
+      case '接機': return t.catAirport;
+      case '派對': return t.catParty;
+      case '日常': return t.catDaily;
+      case '表白': return t.catLove;
+      default: return cat;
+    }
+  };
+
+  const getRenderModeShort = (mode?: string) => {
+    switch (mode) {
+      case 'led-matrix': return lang === 'zh-TW' || lang === 'zh-CN' ? '點陣' : 'LED';
+      case 'neon-glow': return lang === 'zh-TW' || lang === 'zh-CN' ? '霓虹' : 'Neon';
+      case 'outline-stroke': return lang === 'zh-TW' || lang === 'zh-CN' ? '雙色' : '3D';
+      default: return lang === 'zh-TW' || lang === 'zh-CN' ? '簡約' : 'Clean';
+    }
+  };
+
   return (
     <div className="space-y-3">
       {/* Category segmented filter */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
         {categories.map((cat) => (
           <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
+            key={cat.id}
+            onClick={() => setSelectedCategory(cat.id)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap shrink-0 transition-colors ${
-              selectedCategory === cat
+              selectedCategory === cat.id
                 ? 'bg-zinc-100 text-zinc-900 font-semibold'
                 : 'bg-zinc-800/80 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
             }`}
           >
-            {cat}
+            {cat.label}
           </button>
         ))}
       </div>
 
       {/* Grid of templates */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        {filtered.map((t) => {
-          const isActive = activeTemplateId === t.id;
+        {filtered.map((item) => {
+          const isActive = activeTemplateId === item.id;
           return (
             <button
-              key={t.id}
-              onClick={() => onSelectTemplate(t)}
+              key={item.id}
+              onClick={() => onSelectTemplate(item)}
               className={`p-3 rounded-xl border text-left transition-all group ${
                 isActive
                   ? 'bg-pink-500/10 border-pink-500 shadow-sm shadow-pink-500/10'
@@ -210,18 +242,18 @@ export const TemplatePicker: React.FC<TemplatePickerProps> = ({
             >
               <div className="flex items-center justify-between gap-1 mb-1.5">
                 <span className="text-[11px] font-medium text-zinc-400 flex items-center gap-1">
-                  {getCategoryIcon(t.category)}
-                  {t.category}
+                  {getCategoryIcon(item.category)}
+                  {getCategoryLabel(item.category)}
                 </span>
                 <span className="text-[10px] text-zinc-400">
-                  {t.config.renderMode === 'led-matrix' ? '點陣' : '霓虹'}
+                  {getRenderModeShort(item.config.renderMode)}
                 </span>
               </div>
               <p className="text-xs font-semibold text-zinc-100 truncate group-hover:text-pink-300 transition-colors">
-                {t.label}
+                {item.label}
               </p>
               <p className="text-[11px] text-zinc-400 truncate mt-0.5">
-                {t.text}
+                {item.text}
               </p>
             </button>
           );

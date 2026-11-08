@@ -1,11 +1,14 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { BannerConfig } from '../types/banner';
+import { SupportedLanguage, translations } from '../i18n/translations';
+import { resolveCanvasFont } from '../utils/fontHelper';
 
 interface MarqueeCanvasProps {
   config: BannerConfig;
   isPaused?: boolean;
   className?: string;
   onTogglePause?: () => void;
+  lang?: SupportedLanguage;
 }
 
 export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
@@ -13,6 +16,7 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
   isPaused = false,
   className = '',
   onTogglePause,
+  lang = 'zh-TW',
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -25,6 +29,8 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
   const blinkStateRef = useRef<boolean>(true);
   const blinkTimerRef = useRef<number>(0);
   const rainbowOffsetRef = useRef<number>(0);
+
+  const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Measure container size
   const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
@@ -84,6 +90,12 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
     canvas.height = h * dpr;
     ctx.scale(dpr, dpr);
 
+    // Prepare reusable offscreen canvas for dot-matrix and pixel-art modes
+    if (!offscreenCanvasRef.current) {
+      offscreenCanvasRef.current = document.createElement('canvas');
+    }
+    const offCanvas = offscreenCanvasRef.current;
+
     const render = (time: number) => {
       if (!lastTimeRef.current) lastTimeRef.current = time;
       const deltaTime = (time - lastTimeRef.current) / 1000;
@@ -120,7 +132,7 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
       const cols = Math.ceil(w / dotPitch);
       const rows = Math.ceil(h / dotPitch);
 
-      // Render dot matrix pattern if enabled
+      // Render dot matrix pattern if in LED matrix mode
       if (config.renderMode === 'led-matrix') {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
         for (let r = 0; r < rows; r++) {
@@ -132,11 +144,21 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
             ctx.fill();
           }
         }
+      } else if (config.renderMode === 'pixel-art') {
+        // Subtle 8-bit retro arcade background grid lines
+        const blockSize = Math.max(3, Math.min(8, Math.round(config.fontSize / 15)));
+        const gridCols = Math.ceil(w / blockSize);
+        const gridRows = Math.ceil(h / blockSize);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+        for (let r = 0; r < gridRows; r += 2) {
+          ctx.fillRect(0, r * blockSize, w, 1);
+        }
       }
 
-      // Set text font
+      // Dynamically resolve optimal font family stack based on active language
       const currentFontSize = config.fontSize;
-      ctx.font = `900 ${currentFontSize}px "${config.fontFamily}", "Noto Sans TC", sans-serif`;
+      const { fontString } = resolveCanvasFont(config.fontFamily, lang, currentFontSize);
+      ctx.font = fontString;
       ctx.textBaseline = 'middle';
       const textMetrics = ctx.measureText(config.text);
       const textWidth = textMetrics.width;
@@ -179,25 +201,27 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
 
       if (shouldDrawText && config.text.trim().length > 0) {
         if (config.renderMode === 'led-matrix') {
-          // --- FULL PHYSICAL LED DOT-MATRIX DIODE RENDERER ---
-          // Render text into an offscreen buffer at smaller scale to sample active pixels
+          // ========================================================
+          // MODE 1: PHYSICAL LED DOT-MATRIX DIODE RENDERER
+          // Circular glowing diodes with dot-gap and bright diode cores
+          // ========================================================
           const pitch = config.dotSize + config.dotGap;
           const matrixCols = Math.ceil(w / pitch);
           const matrixRows = Math.ceil(h / pitch);
 
-          // We use an offscreen canvas to sample the rasterized text
-          const offCanvas = document.createElement('canvas');
-          offCanvas.width = matrixCols;
-          offCanvas.height = matrixRows;
+          if (offCanvas.width !== matrixCols || offCanvas.height !== matrixRows) {
+            offCanvas.width = matrixCols;
+            offCanvas.height = matrixRows;
+          }
           const offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
 
           if (offCtx) {
             offCtx.fillStyle = '#000000';
             offCtx.fillRect(0, 0, matrixCols, matrixRows);
             
-            // Map text onto the matrix grid
             const gridFontSize = currentFontSize / pitch;
-            offCtx.font = `900 ${gridFontSize}px "${config.fontFamily}", "Noto Sans TC", sans-serif`;
+            const { fontString: offFontString } = resolveCanvasFont(config.fontFamily, lang, gridFontSize);
+            offCtx.font = offFontString;
             offCtx.textBaseline = 'middle';
             offCtx.fillStyle = '#ffffff';
 
@@ -208,18 +232,17 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
             const imgData = offCtx.getImageData(0, 0, matrixCols, matrixRows);
             const data = imgData.data;
 
-            // Draw glowing diode circles
+            // Draw circular glowing diode units
             for (let r = 0; r < matrixRows; r++) {
               for (let c = 0; c < matrixCols; c++) {
                 const idx = (r * matrixCols + c) * 4;
-                const brightness = data[idx] / 255; // Red channel
+                const brightness = data[idx] / 255;
                 
                 if (brightness > 0.18) {
                   const cx = c * pitch + pitch / 2;
                   const cy = r * pitch + pitch / 2;
                   const dotRadius = (config.dotSize / 2) * Math.min(1.2, brightness * 1.1);
 
-                  // Color resolution
                   let litColor = config.textColor;
                   if (config.colorPreset === 'rainbow') {
                     litColor = getRainbowColor(c / matrixCols, rainbowOffsetRef.current);
@@ -231,7 +254,6 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
                       : (isLeftHalf ? '#3b82f6' : '#ef4444');
                   }
 
-                  // Diode Glow Bloom
                   if (config.glowIntensity > 0) {
                     ctx.shadowColor = litColor;
                     ctx.shadowBlur = config.glowIntensity * 2.5;
@@ -254,8 +276,12 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
               }
             }
           }
-        } else {
-          // --- VECTOR NEON GLOW / PIXEL / CLEAN RENDERING ---
+        } else if (config.renderMode === 'outline-stroke' || config.renderMode === 'pixel-art') {
+          // ========================================================
+          // MODE 2: 3D DUO-TONE OUTLINE STROKE (雙色立體描邊)
+          // Concert idol & stadium cheer style: Ultra-sharp contrasting border + 3D extrusion
+          // Guarantees 100% CJK Chinese character legibility without stroke bleeding
+          // ========================================================
           let fillStyle: string | CanvasGradient = config.textColor;
 
           if (config.colorPreset === 'rainbow') {
@@ -271,33 +297,114 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
             fillStyle = strobeToggle ? '#ef4444' : '#3b82f6';
           }
 
-          if (config.renderMode === 'neon-glow') {
-            // Multi-pass neon bloom
-            const glowColor = typeof fillStyle === 'string' ? fillStyle : '#ec4899';
-            const blurLevels = [config.glowIntensity * 4, config.glowIntensity * 2, config.glowIntensity];
+          const strokeWidth = Math.max(4, Math.round(currentFontSize / 9));
+          const offset3D = Math.max(3, Math.round(currentFontSize / 18));
 
-            blurLevels.forEach((blur) => {
-              ctx.shadowColor = glowColor;
-              ctx.shadowBlur = blur;
-              ctx.fillStyle = fillStyle;
-              ctx.fillText(config.text, textX, textY);
-            });
+          ctx.save();
 
-            // Bright core text
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(config.text, textX, textY);
-          } else {
-            // Clean or Pixel Art mode
-            if (config.glowIntensity > 0) {
-              ctx.shadowColor = typeof fillStyle === 'string' ? fillStyle : '#06b6d4';
-              ctx.shadowBlur = config.glowIntensity * 2;
-            } else {
-              ctx.shadowBlur = 0;
+          // 1. 3D Drop Extrusion Shadow for stadium depth
+          ctx.strokeStyle = 'rgba(0, 0, 0, 0.95)';
+          ctx.lineWidth = strokeWidth + 4;
+          ctx.lineJoin = 'round';
+          ctx.lineCap = 'round';
+          ctx.miterLimit = 2;
+          ctx.shadowColor = typeof fillStyle === 'string' ? fillStyle : '#f43f5e';
+          ctx.shadowBlur = config.glowIntensity * 2.2;
+          ctx.strokeText(config.text, textX + offset3D, textY + offset3D);
+
+          // 2. Thick contrasting black outline: keeps Chinese characters razor-sharp!
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = strokeWidth;
+          ctx.strokeText(config.text, textX, textY);
+
+          // 3. Inner neon highlight border
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.lineWidth = Math.max(1.5, strokeWidth * 0.28);
+          ctx.strokeText(config.text, textX, textY);
+
+          // 4. Vibrant foreground fill
+          ctx.fillStyle = fillStyle;
+          ctx.fillText(config.text, textX, textY);
+
+          ctx.restore();
+        } else if (config.renderMode === 'neon-glow') {
+          // ========================================================
+          // MODE 3: VECTOR NEON TUBE GLOW
+          // Smooth blooming multi-pass neon radiance with bright white filament
+          // ========================================================
+          let fillStyle: string | CanvasGradient = config.textColor;
+
+          if (config.colorPreset === 'rainbow') {
+            const grad = ctx.createLinearGradient(0, 0, w, 0);
+            for (let i = 0; i <= 6; i++) {
+              const stop = i / 6;
+              const hue = (stop * 360 + rainbowOffsetRef.current * 80) % 360;
+              grad.addColorStop(stop, `hsl(${hue}, 100%, 65%)`);
             }
+            fillStyle = grad;
+          } else if (config.colorPreset === 'police-strobe') {
+            const strobeToggle = Math.floor(time * 0.006) % 2 === 0;
+            fillStyle = strobeToggle ? '#ef4444' : '#3b82f6';
+          }
+
+          // Multi-pass neon tube radiance & bloom
+          const glowColor = typeof fillStyle === 'string' ? fillStyle : '#ec4899';
+          const blurLevels = [
+            config.glowIntensity * 5,
+            config.glowIntensity * 3,
+            config.glowIntensity * 1.5,
+          ];
+
+          blurLevels.forEach((blur) => {
+            ctx.shadowColor = glowColor;
+            ctx.shadowBlur = blur;
             ctx.fillStyle = fillStyle;
             ctx.fillText(config.text, textX, textY);
+          });
+
+          // Core tube text follows user's chosen theme color (Hot Pink, Amber Gold, Cyan, Rainbow, etc.)
+          ctx.shadowBlur = Math.max(2, config.glowIntensity * 0.8);
+          ctx.shadowColor = glowColor;
+          ctx.fillStyle = fillStyle;
+          ctx.fillText(config.text, textX, textY);
+        } else {
+          // ========================================================
+          // MODE 4: CLEAN (ULTRA CONTRAST)
+          // Razor-sharp modern vector typography, crisp edges, ultra-high readability
+          // ========================================================
+          let fillStyle: string | CanvasGradient = config.textColor;
+
+          if (config.colorPreset === 'rainbow') {
+            const grad = ctx.createLinearGradient(0, 0, w, 0);
+            for (let i = 0; i <= 6; i++) {
+              const stop = i / 6;
+              const hue = (stop * 360 + rainbowOffsetRef.current * 80) % 360;
+              grad.addColorStop(stop, `hsl(${hue}, 100%, 65%)`);
+            }
+            fillStyle = grad;
+          } else if (config.colorPreset === 'police-strobe') {
+            const strobeToggle = Math.floor(time * 0.006) % 2 === 0;
+            fillStyle = strobeToggle ? '#ef4444' : '#3b82f6';
           }
+
+          ctx.save();
+          // High-contrast clean outline & drop-shadow for pristine outdoor visibility
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+          ctx.shadowBlur = config.glowIntensity > 0 ? config.glowIntensity * 1.2 : 0;
+          ctx.shadowOffsetX = 3;
+          ctx.shadowOffsetY = 3;
+
+          ctx.fillStyle = fillStyle;
+          ctx.fillText(config.text, textX, textY);
+
+          // Second crisp pass to guarantee razor-sharp contrast
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+          ctx.fillStyle = fillStyle;
+          ctx.fillText(config.text, textX, textY);
+          ctx.restore();
         }
       }
 
@@ -330,6 +437,7 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
     config,
     isPaused,
     getRainbowColor,
+    lang,
   ]);
 
   return (
@@ -337,7 +445,7 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
       ref={containerRef}
       onClick={onTogglePause}
       className={`relative w-full h-full overflow-hidden select-none cursor-pointer ${className}`}
-      title="點擊暫停 / 播放"
+      title={translations[lang]?.previewTitle || '點擊暫停 / 播放'}
     >
       <canvas
         ref={canvasRef}
@@ -347,7 +455,7 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
       {isPaused && (
         <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur-sm border border-zinc-700/60 text-xs font-mono text-zinc-300 flex items-center gap-1.5 shadow-lg pointer-events-none">
           <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-          已暫停
+          {translations[lang]?.paused || '已暫停'}
         </div>
       )}
     </div>

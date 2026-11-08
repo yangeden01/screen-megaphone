@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BannerConfig, PresetTemplate } from './types/banner';
 import { MarqueeCanvas } from './components/MarqueeCanvas';
 import { FullscreenDisplay } from './components/FullscreenDisplay';
@@ -87,17 +87,53 @@ export default function App() {
     } catch {}
   };
 
-  const handleCloseFullscreen = () => {
-    setIsFullscreen(false);
-    // Trigger interstitial ad demo when exiting fullscreen mode
-    setShowInterstitialAd(true);
-  };
+  // Track the timestamp when entering fullscreen
+  const fullscreenStartTimeRef = React.useRef<number>(0);
+  // Track if user manually dismissed fullscreen in current orientation
+  const userManuallyExitedFullscreenRef = React.useRef<boolean>(false);
+  // Track previous landscape orientation to only auto-trigger upon transition
+  const lastOrientationLandscapeRef = React.useRef<boolean>(
+    typeof window !== 'undefined' ? window.innerWidth > window.innerHeight : false
+  );
 
-  // Automatically switch to full-screen display when phone is turned horizontally (landscape)
+  useEffect(() => {
+    if (isFullscreen) {
+      fullscreenStartTimeRef.current = Date.now();
+    }
+  }, [isFullscreen]);
+
+  const handleOpenFullscreen = useCallback(() => {
+    userManuallyExitedFullscreenRef.current = false;
+    setIsFullscreen(true);
+  }, []);
+
+  const handleCloseFullscreen = useCallback(() => {
+    userManuallyExitedFullscreenRef.current = true;
+    setIsFullscreen(false);
+    // 依使用者需求：全螢幕持續超過 20 秒才推廣告，小於 20 秒（調整參數階段）不要上廣告
+    const elapsedSeconds = (Date.now() - fullscreenStartTimeRef.current) / 1000;
+    if (elapsedSeconds >= 20) {
+      setShowInterstitialAd(true);
+    } else {
+      setShowInterstitialAd(false);
+    }
+  }, []);
+
+  // Automatically switch to full-screen display ONLY when user physically rotates phone to horizontal
   useEffect(() => {
     const handleOrientation = () => {
       const isLandscape = window.innerWidth > window.innerHeight;
-      if (isLandscape) {
+      const wasLandscape = lastOrientationLandscapeRef.current;
+      lastOrientationLandscapeRef.current = isLandscape;
+
+      // If device returns to portrait mode, clear the manual exit suppression flag
+      if (!isLandscape) {
+        userManuallyExitedFullscreenRef.current = false;
+      }
+
+      // ONLY transition automatically when device is rotated from portrait into landscape
+      // and NOT if user explicitly closed/exited fullscreen while in landscape!
+      if (!wasLandscape && isLandscape && !userManuallyExitedFullscreenRef.current) {
         setIsFullscreen(true);
       }
     };
@@ -107,10 +143,6 @@ export default function App() {
       setTimeout(handleOrientation, 150);
       setTimeout(handleOrientation, 350);
     });
-
-    if (window.innerWidth > window.innerHeight) {
-      setIsFullscreen(true);
-    }
 
     return () => {
       window.removeEventListener('resize', handleOrientation);
@@ -177,12 +209,16 @@ export default function App() {
       }
       if (e.key === 'f' || e.key === 'F') {
         e.preventDefault();
-        setIsFullscreen((prev) => !prev);
+        if (isFullscreen) {
+          handleCloseFullscreen();
+        } else {
+          handleOpenFullscreen();
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [isFullscreen, handleCloseFullscreen]);
 
   const handleUpdateConfig = (partial: Partial<BannerConfig>) => {
     setConfig((prev) => ({ ...prev, ...partial }));
@@ -291,16 +327,15 @@ export default function App() {
             </select>
           </div>
 
-          <PWAInstallButton />
+          <PWAInstallButton lang={currentLang} />
 
           <button
-            onClick={() => setIsFullscreen(true)}
+            onClick={handleOpenFullscreen}
             className="flex items-center gap-1 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white text-xs font-semibold shadow-lg shadow-pink-600/25 transition active:scale-95 whitespace-nowrap shrink-0"
             title={t.openFullscreen}
           >
             <Maximize2 className="w-3.5 h-3.5 shrink-0" />
-            <span className="hidden sm:inline">{t.openFullscreen}</span>
-            <span className="sm:hidden">全螢幕</span>
+            <span>{t.openFullscreen}</span>
           </button>
         </div>
       </header>
@@ -341,15 +376,15 @@ export default function App() {
 
             {/* Canvas viewport container */}
             <div className="relative h-44 sm:h-56 md:h-72 w-full rounded-xl md:rounded-2xl overflow-hidden bg-black border border-zinc-800/90 shadow-inner">
-              <MarqueeCanvas config={config} />
+              <MarqueeCanvas config={config} lang={currentLang} />
 
               {/* Fast Fullscreen Button Hover Badge */}
               <button
-                onClick={() => setIsFullscreen(true)}
+                onClick={handleOpenFullscreen}
                 className="absolute bottom-3 right-3 px-3 py-1.5 rounded-lg bg-pink-600/90 hover:bg-pink-500 text-white text-xs font-medium backdrop-blur-md shadow-lg flex items-center gap-1.5 transition active:scale-95"
               >
                 <Maximize2 className="w-3.5 h-3.5" />
-                <span>滿版應援</span>
+                <span>{t.fullCheerBanner}</span>
               </button>
             </div>
           </div>
@@ -366,7 +401,7 @@ export default function App() {
             }`}
           >
             <Sliders className="w-3.5 h-3.5" />
-            彈幕樣式調整
+            {t.tabEditor}
           </button>
           <button
             onClick={() => setActiveTab('templates')}
@@ -377,7 +412,7 @@ export default function App() {
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            熱門場景範本
+            {t.tabTemplates}
           </button>
           <button
             onClick={() => setActiveTab('saved')}
@@ -388,7 +423,7 @@ export default function App() {
             }`}
           >
             <Bookmark className="w-3.5 h-3.5" />
-            常用收藏 ({savedList.length})
+            {t.tabSaved} ({savedList.length})
           </button>
         </div>
 
@@ -400,10 +435,11 @@ export default function App() {
 
           {activeTab === 'templates' && (
             <TemplatePicker
-              onSelectTemplate={(t) => {
-                handleSelectTemplate(t);
+              onSelectTemplate={(tpl) => {
+                handleSelectTemplate(tpl);
                 setActiveTab('editor');
               }}
+              lang={currentLang}
             />
           )}
 
@@ -417,6 +453,7 @@ export default function App() {
               onDelete={handleDeleteSaved}
               onSaveCurrent={handleSaveCurrent}
               isCurrentSaved={isCurrentSaved}
+              lang={currentLang}
             />
           )}
         </div>
@@ -428,20 +465,20 @@ export default function App() {
         <div className="p-4 md:p-5 rounded-2xl bg-gradient-to-r from-pink-500/10 via-zinc-900 to-cyan-500/10 border border-zinc-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <h4 className="text-sm font-bold text-zinc-100 flex items-center gap-2">
-              <span>想將《螢幕大聲公》上架 Google Play？</span>
+              <span>{t.marketCardTitle}</span>
               <span className="text-[11px] font-normal text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded-full border border-pink-500/20">
-                可行性 100%
+                {t.marketCardBadge}
               </span>
             </h4>
             <p className="text-xs text-zinc-400 leading-relaxed max-w-2xl">
-              《螢幕大聲公》已內建完整 PWA 規格，可透過 Google 官方 Bubblewrap 工具免寫 Java 快速打包為 AAB 上傳 Google Play Console，享有千萬級 ASO 自然搜尋流量與廣告收益！
+              {t.marketCardDesc}
             </p>
           </div>
           <button
             onClick={() => setIsPublishModalOpen(true)}
             className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 border border-zinc-700 whitespace-nowrap shrink-0 transition"
           >
-            檢視上架與變現指南 →
+            {t.marketCardBtn}
           </button>
         </div>
       </main>
@@ -451,12 +488,12 @@ export default function App() {
         <button
           onClick={() => setIsPublishModalOpen(true)}
           className="p-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs"
-          title="上架諮詢"
+          title={t.tabMonetization}
         >
           <HelpCircle className="w-5 h-5" />
         </button>
         <button
-          onClick={() => setIsFullscreen(true)}
+          onClick={handleOpenFullscreen}
           className="flex-1 h-11 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-pink-600/25 active:scale-[0.98] transition"
         >
           <Maximize2 className="w-4 h-4" />
@@ -478,6 +515,7 @@ export default function App() {
       <AdInterstitialModal
         isOpen={showInterstitialAd}
         onClose={() => setShowInterstitialAd(false)}
+        lang={currentLang}
       />
 
       {/* Publish & Monetization Guide Modal */}

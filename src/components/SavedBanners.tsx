@@ -1,6 +1,7 @@
 import React from 'react';
 import { BannerConfig } from '../types/banner';
-import { Bookmark, Play, Trash2, Clock } from 'lucide-react';
+import { Bookmark, Play, Trash2 } from 'lucide-react';
+import { SupportedLanguage, translations } from '../i18n/translations';
 
 interface SavedBannersProps {
   savedList: BannerConfig[];
@@ -8,6 +9,7 @@ interface SavedBannersProps {
   onDelete: (id: string) => void;
   onSaveCurrent: () => void;
   isCurrentSaved: boolean;
+  lang?: SupportedLanguage;
 }
 
 export const SavedBanners: React.FC<SavedBannersProps> = ({
@@ -16,13 +18,25 @@ export const SavedBanners: React.FC<SavedBannersProps> = ({
   onDelete,
   onSaveCurrent,
   isCurrentSaved,
+  lang = 'zh-TW',
 }) => {
+  const t = translations[lang];
+
+  const getRenderModeShort = (mode?: string) => {
+    switch (mode) {
+      case 'led-matrix': return lang === 'zh-TW' || lang === 'zh-CN' ? '點陣' : 'LED';
+      case 'neon-glow': return lang === 'zh-TW' || lang === 'zh-CN' ? '霓虹' : 'Neon';
+      case 'outline-stroke': return lang === 'zh-TW' || lang === 'zh-CN' ? '雙色' : '3D';
+      default: return lang === 'zh-TW' || lang === 'zh-CN' ? '簡約' : 'Clean';
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-zinc-300 flex items-center gap-1.5">
           <Bookmark className="w-3.5 h-3.5 text-pink-400" />
-          常用彈幕收藏庫 ({savedList.length})
+          {t.savedTitle} ({savedList.length})
         </span>
         <button
           onClick={onSaveCurrent}
@@ -33,13 +47,13 @@ export const SavedBanners: React.FC<SavedBannersProps> = ({
               : 'bg-pink-600 hover:bg-pink-500 text-white shadow-sm'
           }`}
         >
-          {isCurrentSaved ? '✓ 已在收藏庫' : '+ 收藏目前彈幕'}
+          {isCurrentSaved ? t.alreadySaved : t.saveCurrentBanner}
         </button>
       </div>
 
       {savedList.length === 0 ? (
         <div className="p-6 rounded-xl border border-dashed border-zinc-800 text-center text-xs text-zinc-500">
-          尚無收藏的彈幕，編輯完喜歡的內容後可點擊上方按鈕收藏！
+          {t.emptySaved}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -58,13 +72,13 @@ export const SavedBanners: React.FC<SavedBannersProps> = ({
                     style={{ backgroundColor: item.textColor || '#f59e0b' }}
                   />
                   <span className="text-xs font-semibold text-zinc-100 truncate">
-                    {item.text || '(無文字)'}
+                    {item.text || t.noText}
                   </span>
                 </div>
                 <div className="text-[10px] text-zinc-500 flex items-center gap-2">
-                  <span>速度 {item.speed}x</span>
+                  <span>{t.speedLabel} {item.speed}x</span>
                   <span>·</span>
-                  <span>{item.renderMode === 'led-matrix' ? '點陣' : '霓虹'}</span>
+                  <span>{getRenderModeShort(item.renderMode)}</span>
                   <span>·</span>
                   <span>{item.fontFamily}</span>
                 </div>
@@ -74,14 +88,14 @@ export const SavedBanners: React.FC<SavedBannersProps> = ({
                 <button
                   onClick={() => onSelect(item)}
                   className="p-1.5 rounded-lg text-zinc-400 hover:text-pink-400 hover:bg-zinc-800 transition"
-                  title="載入並使用"
+                  title={t.loadAndUse}
                 >
                   <Play className="w-4 h-4 fill-current" />
                 </button>
                 <button
                   onClick={() => onDelete(item.id)}
                   className="p-1.5 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-zinc-800 transition"
-                  title="刪除"
+                  title={t.delete}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

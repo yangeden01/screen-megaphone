@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { translations, SupportedLanguage } from '../i18n/translations';
 
+import { getFontDefinitionsForLang } from '../utils/fontHelper';
+
 interface EditorControlsProps {
   config: BannerConfig;
   onChange: (partial: Partial<BannerConfig>) => void;
@@ -36,7 +38,7 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
   const renderModes: { id: RenderMode; label: string; desc: string }[] = [
     { id: 'led-matrix', label: t.styleLedMatrix, desc: 'LED Matrix' },
     { id: 'neon-glow', label: t.styleNeonGlow, desc: 'Neon Tube' },
-    { id: 'pixel-art', label: t.stylePixelArt, desc: '8-Bit Retro' },
+    { id: 'outline-stroke', label: t.styleOutline, desc: '3D Outline' },
     { id: 'clean', label: t.styleClean, desc: 'Ultra Contrast' },
   ];
 
@@ -48,12 +50,16 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
     { id: 'bounce', label: `${t.dirBounce} ↔` },
   ];
 
-  const fonts: { id: FontStyle; label: string; sample: string }[] = [
-    { id: 'Orbitron', label: 'Orbitron (Digital)', sample: '123' },
-    { id: 'Noto Sans TC', label: 'Noto Sans (Bold)', sample: 'Aa' },
-    { id: 'DotGothic16', label: 'DotGothic (Pixel)', sample: '88' },
-    { id: 'VT323', label: 'VT323 (Retro Terminal)', sample: '><' },
-  ];
+  const fonts = getFontDefinitionsForLang(lang);
+
+  const isFontActive = (fontId: string) => {
+    if (config.fontFamily === fontId) return true;
+    if (fontId === 'heavy-bold' && (config.fontFamily === 'Noto Sans TC' || config.fontFamily === 'heavy-bold')) return true;
+    if (fontId === 'calligraphy' && (config.fontFamily === 'Ma Shan Zheng' || config.fontFamily === 'calligraphy')) return true;
+    if (fontId === 'cute-pop' && (config.fontFamily === 'ZCOOL KuaiLe' || config.fontFamily === 'cute-pop')) return true;
+    if (fontId === 'cyber-tech' && (config.fontFamily === 'Orbitron' || config.fontFamily === 'cyber-tech')) return true;
+    return false;
+  };
 
   return (
     <div className="space-y-5 text-sm">
@@ -62,10 +68,10 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
         <label className="block text-xs font-medium text-zinc-300 mb-1.5 flex items-center justify-between">
           <span className="flex items-center gap-1.5">
             <Type className="w-3.5 h-3.5 text-pink-400" />
-            彈幕內容 (支援文字與 Emoji)
+            {t.bannerContent}
           </span>
           <span className="text-[11px] text-zinc-500 font-mono">
-            {config.text.length} 字
+            {config.text.length} {t.charsCount}
           </span>
         </label>
         <div className="relative">
@@ -73,7 +79,7 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
             type="text"
             value={config.text}
             onChange={(e) => onChange({ text: e.target.value })}
-            placeholder="請輸入彈幕內容..."
+            placeholder={t.inputPlaceholder}
             className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-zinc-100 placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition"
           />
           {config.text && (
@@ -81,7 +87,7 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
               onClick={() => onChange({ text: '' })}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 hover:text-zinc-200"
             >
-              清空
+              {t.clear}
             </button>
           )}
         </div>
@@ -91,7 +97,7 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
       <div>
         <label className="block text-xs font-medium text-zinc-300 mb-2 flex items-center gap-1.5">
           <Grid className="w-3.5 h-3.5 text-cyan-400" />
-          顯示樣式效果
+          {t.displayStyle}
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {renderModes.map((mode) => (
@@ -116,10 +122,10 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
         <label className="block text-xs font-medium text-zinc-300 mb-2 flex items-center justify-between">
           <span className="flex items-center gap-1.5">
             <Palette className="w-3.5 h-3.5 text-amber-400" />
-            色彩主題與特效
+            {t.colorPreset}
           </span>
           <span className="text-[11px] text-zinc-500">
-            {config.colorPreset === 'rainbow' ? '🌈 動態彩虹中' : ''}
+            {config.colorPreset === 'rainbow' ? t.rainbowActive : ''}
           </span>
         </label>
         <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
@@ -151,10 +157,10 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
             value={config.textColor}
             onChange={(e) => onChange({ colorPreset: 'custom', textColor: e.target.value })}
             className="w-7 h-7 rounded border border-zinc-700 bg-transparent cursor-pointer p-0"
-            title="自訂顏色"
+            title={t.colorCustom}
           />
           <span className="text-xs text-zinc-400 font-mono">{config.textColor}</span>
-          <span className="text-xs text-zinc-500">點擊色塊自選任意色彩</span>
+          <span className="text-xs text-zinc-500">{t.customColorHint}</span>
         </div>
       </div>
 
@@ -162,7 +168,7 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
       <div>
         <label className="block text-xs font-medium text-zinc-300 mb-2 flex items-center gap-1.5">
           <MoveHorizontal className="w-3.5 h-3.5 text-blue-400" />
-          滾動方向與動態
+          {t.direction}
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
           {directions.map((dir) => (
@@ -188,7 +194,7 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
           <div className="flex items-center justify-between text-xs mb-2">
             <span className="text-zinc-300 flex items-center gap-1">
               <Sliders className="w-3 h-3 text-pink-400" />
-              滾動速度
+              {t.scrollSpeed}
             </span>
             <span className="font-mono text-pink-400 font-semibold">{config.speed}x</span>
           </div>
@@ -208,7 +214,7 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
           <div className="flex items-center justify-between text-xs mb-2">
             <span className="text-zinc-300 flex items-center gap-1">
               <Type className="w-3 h-3 text-cyan-400" />
-              文字大小
+              {t.fontSize}
             </span>
             <span className="font-mono text-cyan-400 font-semibold">{config.fontSize}px</span>
           </div>
@@ -228,7 +234,7 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
           <div className="flex items-center justify-between text-xs mb-2">
             <span className="text-zinc-300 flex items-center gap-1">
               <Flame className="w-3 h-3 text-amber-400" />
-              發光強度
+              {t.glowIntensity}
             </span>
             <span className="font-mono text-amber-400 font-semibold">{config.glowIntensity}</span>
           </div>
@@ -248,23 +254,35 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
       <div>
         <label className="block text-xs font-medium text-zinc-300 mb-2 flex items-center gap-1.5">
           <Type className="w-3.5 h-3.5 text-purple-400" />
-          LED 字體風格
+          {t.fontStyles}
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {fonts.map((f) => (
-            <button
-              key={f.id}
-              onClick={() => onChange({ fontFamily: f.id })}
-              className={`p-2.5 rounded-xl border text-left transition-all ${
-                config.fontFamily === f.id
-                  ? 'bg-zinc-800 border-pink-500 text-zinc-100'
-                  : 'bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:text-zinc-200'
-              }`}
-            >
-              <div className="text-xs font-medium truncate">{f.label}</div>
-              <div className="text-[11px] text-zinc-400 font-mono mt-0.5">{f.sample} 範例</div>
-            </button>
-          ))}
+          {fonts.map((f) => {
+            const active = isFontActive(f.id);
+            return (
+              <button
+                key={f.id}
+                onClick={() => onChange({ fontFamily: f.id })}
+                className={`p-3 rounded-xl border text-left transition-all ${
+                  active
+                    ? 'bg-zinc-800 border-pink-500 text-zinc-100 shadow-md ring-1 ring-pink-500/40'
+                    : 'bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
+                }`}
+              >
+                <div className="text-xs font-semibold truncate text-zinc-100">{f.label}</div>
+                <div
+                  className="text-sm mt-1 text-pink-300/90 truncate tracking-wide"
+                  style={{
+                    fontFamily: `${f.fontFamily}, "Noto Sans TC", sans-serif`,
+                    fontWeight: f.weight,
+                    fontStyle: f.fontStyle || 'normal',
+                  }}
+                >
+                  {f.sample}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -280,7 +298,7 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
           }`}
         >
           <Zap className="w-3.5 h-3.5" />
-          <span>狂歡暴閃: {config.isBlinking ? '已開啟' : '關閉'}</span>
+          <span>{t.crazyBlink}: {config.isBlinking ? t.toggleOn : t.toggleOff}</span>
         </button>
 
         {/* Mirror mode toggle */}
@@ -293,7 +311,7 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
           }`}
         >
           <FlipHorizontal className="w-3.5 h-3.5" />
-          <span>鏡像反轉: {config.isMirrored ? '開啟 (反字)' : '正常'}</span>
+          <span>{t.mirrorFlip}: {config.isMirrored ? t.mirrorOn : t.mirrorOff}</span>
         </button>
 
         {/* Border frame toggle */}
@@ -306,7 +324,7 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
           }`}
         >
           <Square className="w-3.5 h-3.5" />
-          <span>霓虹燈邊框: {config.hasBorder ? '開啟' : '無'}</span>
+          <span>{t.neonBorder}: {config.hasBorder ? t.toggleOn : t.toggleOff}</span>
         </button>
       </div>
     </div>

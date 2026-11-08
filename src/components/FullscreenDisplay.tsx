@@ -42,6 +42,16 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
   // Screen Wake Lock
   const { requestLock, releaseLock, isLocked } = useWakeLock();
 
+  const handleExit = useCallback((e?: React.SyntheticEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
+    onClose();
+  }, [onClose]);
+
   useEffect(() => {
     // Request wake lock on enter
     requestLock();
@@ -51,13 +61,33 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
       document.documentElement.requestFullscreen().catch(() => {});
     }
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        handleExit();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Listen to native browser fullscreen exit (e.g., Android back button or notification swipe)
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        onClose();
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
     return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
       releaseLock();
       if (document.fullscreenElement && document.exitFullscreen) {
         document.exitFullscreen().catch(() => {});
       }
     };
-  }, [requestLock, releaseLock]);
+  }, [requestLock, releaseLock, onClose, handleExit]);
 
   // Auto-hide HUD after 3 seconds of inactivity
   const resetHideTimer = useCallback(() => {
@@ -114,9 +144,9 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
     }
 
     let burstCount = 0;
-    const totalBursts = 20;
+    const totalBursts = 100;
 
-    // Consecutive 20-burst fireworks celebration
+    // Consecutive 100-burst fireworks cheer celebration (as requested by user)
     cheerIntervalRef.current = window.setInterval(() => {
       burstCount++;
 
@@ -125,7 +155,7 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
       const angle = burstCount % 3 === 0 ? 90 : burstCount % 2 === 0 ? 60 : 120;
 
       confetti({
-        particleCount: 50 + Math.floor(Math.random() * 30),
+        particleCount: 45 + Math.floor(Math.random() * 30),
         angle: angle + (Math.random() * 20 - 10),
         spread: 60 + Math.random() * 30,
         origin: { x: originX, y: 0.75 + Math.random() * 0.15 },
@@ -141,7 +171,7 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
           cheerIntervalRef.current = null;
         }
       }
-    }, 150); // Fires every 150ms for ~3 seconds of continuous fireworks!
+    }, 120); // 100 bursts over ~12s of non-stop celebratory atmosphere!
   };
 
   return (
@@ -162,6 +192,7 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
           config={config}
           isPaused={isPaused}
           onTogglePause={() => setIsPaused((prev) => !prev)}
+          lang={lang}
         />
       </div>
 
@@ -199,12 +230,11 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
             </button>
 
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onClose();
-              }}
+              type="button"
+              onClick={handleExit}
               className="p-2.5 rounded-full bg-red-600/90 hover:bg-red-500 text-white shadow-xl transition-transform active:scale-90"
               title={t.exitFullscreen}
+              aria-label={t.exitFullscreen}
             >
               <X className="w-5 h-5" />
             </button>
