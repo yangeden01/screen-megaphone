@@ -5,14 +5,12 @@ import { FullscreenDisplay } from './components/FullscreenDisplay';
 import { EditorControls } from './components/EditorControls';
 import { TemplatePicker } from './components/TemplatePicker';
 import { SavedBanners } from './components/SavedBanners';
-import { PublishGuideModal } from './components/PublishGuideModal';
 import { PWAInstallButton } from './components/PWAInstallButton';
 import { 
   Maximize2, 
   Sparkles, 
   Sliders, 
   Bookmark, 
-  HelpCircle, 
   Smartphone, 
   Share2,
   Play,
@@ -62,7 +60,6 @@ export default function App() {
     }
   });
   const [activeTab, setActiveTab] = useState<'editor' | 'templates' | 'saved'>('editor');
-  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
 
   const [currentLang, setCurrentLang] = useState<SupportedLanguage>(() => {
@@ -281,13 +278,6 @@ export default function App() {
           >
             {t.tabSaved}
           </button>
-          <button
-            onClick={() => setIsPublishModalOpen(true)}
-            className="text-pink-400 hover:text-pink-300 transition-colors whitespace-nowrap shrink-0 font-medium flex items-center gap-1"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            {t.tabMonetization}
-          </button>
         </nav>
 
         {/* Zone 3: Primary action + Language Switcher + PWA Install */}
@@ -440,37 +430,10 @@ export default function App() {
           )}
         </div>
 
-        {/* Value Proposition Callout Card: Answering the user's inquiry */}
-        <div className="p-4 md:p-5 rounded-2xl bg-gradient-to-r from-pink-500/10 via-zinc-900 to-cyan-500/10 border border-zinc-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h4 className="text-sm font-bold text-zinc-100 flex items-center gap-2">
-              <span>{t.marketCardTitle}</span>
-              <span className="text-[11px] font-normal text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded-full border border-pink-500/20">
-                {t.marketCardBadge}
-              </span>
-            </h4>
-            <p className="text-xs text-zinc-400 leading-relaxed max-w-2xl">
-              {t.marketCardDesc}
-            </p>
-          </div>
-          <button
-            onClick={() => setIsPublishModalOpen(true)}
-            className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 border border-zinc-700 whitespace-nowrap shrink-0 transition"
-          >
-            {t.marketCardBtn}
-          </button>
-        </div>
       </main>
 
       {/* Mobile Sticky Bottom CTA Bar (<15% viewport height cap) */}
       <div className="fixed bottom-0 left-0 right-0 p-3 bg-zinc-950/90 backdrop-blur-md border-t border-zinc-800 md:hidden z-30 flex items-center gap-2.5">
-        <button
-          onClick={() => setIsPublishModalOpen(true)}
-          className="p-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs"
-          title={t.tabMonetization}
-        >
-          <HelpCircle className="w-5 h-5" />
-        </button>
         <button
           onClick={handleOpenFullscreen}
           className="flex-1 h-11 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-pink-600/25 active:scale-[0.98] transition"
@@ -490,11 +453,6 @@ export default function App() {
         />
       )}
 
-      {/* Publish & Monetization Guide Modal */}
-      <PublishGuideModal
-        isOpen={isPublishModalOpen}
-        onClose={() => setIsPublishModalOpen(false)}
-      />
     </div>
   );
 }
