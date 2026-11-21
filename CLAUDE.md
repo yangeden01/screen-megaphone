@@ -2,7 +2,9 @@
 
 依 GitHub `yangeden01/screen-megaphone` 的程式碼與提交紀錄整理，日期 2026-11-21。`main` 為 `c527870`（v1.0.2 / versionCode 3）；2026-11-21 起由 Claude Code 維護，目前程式碼為 v1.0.3 / versionCode 4。
 
-未驗證：Play Console 正式版的實際版本號、上架國家、是否啟用 Play App Signing、GitHub Actions 最近一次結果；本機未實際建置。以下標「待確認」的項目，第一次有 Play Console 截圖或資訊時要更新本檔。
+Play Console（2026-11-21 截圖）：正式版已發布，100% 推出，約 2 天前發布，安裝 10。
+
+未驗證：Play 正式版的 versionCode（推定 3 / 1.0.2）、上架國家、Play App Signing 設定；本機無 Android SDK，Android 建置只在 CI 驗證過。以下標「待確認」的項目，第一次有 Play Console 截圖或資訊時要更新本檔。
 
 ## 工作規則
 
