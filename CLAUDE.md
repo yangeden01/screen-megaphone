@@ -1,10 +1,10 @@
 # CLAUDE.md — 螢幕大聲公（Screen Megaphone）
 
-依 GitHub `yangeden01/screen-megaphone` 的程式碼與提交紀錄整理，日期 2026-11-21。`main` 為 `c527870`（v1.0.2 / versionCode 3）；2026-11-21 起由 Claude Code 維護，目前程式碼為 v1.0.3 / versionCode 4。
+依 GitHub `yangeden01/screen-megaphone` 的程式碼與提交紀錄整理，日期 2026-11-21。`main` 為 `c527870`（v1.0.2 / versionCode 3）；2026-11-21 起由 Claude Code 維護。
 
-Play Console（2026-11-21 截圖）：正式版已發布，100% 推出，約 2 天前發布，安裝 10。
+Play 正式版：**10 (1.0.4)**，2026-11-21 21:36（台北）已發布、全面推出（先經內部測試軌實機驗證）。前一版約 2026-11-19 發布，安裝 10。
 
-未驗證：Play 正式版的 versionCode（推定 3 / 1.0.2）、上架國家、Play App Signing 設定；本機無 Android SDK，Android 建置只在 CI 驗證過。以下標「待確認」的項目，第一次有 Play Console 截圖或資訊時要更新本檔。
+未驗證：上架國家、Play App Signing 設定；本機無 Android SDK，Android 建置只在 CI 驗證過。以下標「待確認」的項目，第一次有 Play Console 截圖或資訊時要更新本檔。
 
 ## 工作規則
 
@@ -72,7 +72,7 @@ CI：`.github/workflows/build-android-aab.yml`，`main` push 或手動 dispatch 
 ## 版本
 
 - versionCode / versionName 寫在 `app/build.gradle` 與 `twa-manifest.json` 兩處，要一起改；CI 不會自動遞增。
-- 目前 10 / 1.0.4。Play 已用過 versionCode 4（2026-11-21 上傳內部測試時被拒），實際最大值不明，所以直接跳到 10。下次上傳若再被拒就繼續往上加，並把 Play 實際用到的數字記在這裡。
+- 目前 10 / 1.0.4，即正式版。Play 已用過 versionCode 4（2026-11-21 上傳內部測試時被拒），實際最大值不明，所以直接跳到 10。下次上傳若再被拒就繼續往上加，並把 Play 實際用到的數字記在這裡。
 - 1.0.4 的內容與原本準備的 1.0.3 相同（移除模擬廣告與上架教學）。
 
 ## 現況與風險（依優先順序，只回報，待使用者決定）
