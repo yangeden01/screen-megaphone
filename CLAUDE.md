@@ -1,6 +1,6 @@
 # CLAUDE.md — 螢幕大聲公（Screen Megaphone）
 
-依 GitHub `yangeden01/screen-megaphone` 的程式碼與提交紀錄整理，日期 2026-11-21。`main` 為 `c527870`（v1.0.2 / versionCode 3）。
+依 GitHub `yangeden01/screen-megaphone` 的程式碼與提交紀錄整理，日期 2026-11-21。`main` 為 `c527870`（v1.0.2 / versionCode 3）；2026-11-21 起由 Claude Code 維護，目前程式碼為 v1.0.3 / versionCode 4。
 
 未驗證：Play Console 正式版的實際版本號、上架國家、是否啟用 Play App Signing、GitHub Actions 最近一次結果；本機未實際建置。以下標「待確認」的項目，第一次有 Play Console 截圖或資訊時要更新本檔。
 
@@ -66,14 +66,14 @@ CI：`.github/workflows/build-android-aab.yml`，`main` push 或手動 dispatch 
 ## 版本
 
 - versionCode / versionName 寫在 `app/build.gradle` 與 `twa-manifest.json` 兩處，要一起改；CI 不會自動遞增。
-- 目前 3 / 1.0.2。Play 已使用的最大 versionCode 待確認，下一版至少 4。
+- 目前 4 / 1.0.3（移除模擬廣告與上架教學）。Play 上已上傳的最大 versionCode 待確認；若 4 已被用過，要再往上加。
 
 ## 現況與風險（依優先順序，只回報，待使用者決定）
 
 1. **簽署金鑰與密碼公開。** repo 是公開的，`release.keystore` 與寫死在 `app/build.gradle` 的密碼都在裡面；CI 還把 `android.keystore` 一起上傳到 Artifacts。若有 Play App Signing，外人仍需要你的 Play 帳號才能上傳，風險有限，但建議之後：申請重設上傳金鑰 → 改存 GitHub Secrets → 從 repo 移除。
-2. **模擬廣告。** `AdBanner.tsx` 與 `AdInterstitialModal.tsx`（離開全螢幕時跳出）顯示「AdMob 廣告位」字樣的假廣告，不是真的 AdMob。正式版出現假廣告可能違反 Play 政策，也影響體驗；要接真廣告或移除，需使用者決定。
+2. ~~模擬廣告~~：v1.0.3 已移除。要接真的 AdMob 須在 Android 原生層加 SDK，另案處理。
 3. **APK 內含個人截圖。** `app/src/main/assets/web/assets/aistudio/`（49 張）與 `public/assets/aistudio/` 是 AI Studio 對話時上傳的 Play Console、GitHub 截圖，會被打包進 APK 與公開 repo。
-4. **`PublishGuideModal.tsx`** 是給開發者看的上架教學，仍在 App 內；要不要對使用者隱藏待確認。
+4. ~~上架教學卡片~~：v1.0.3 已移除。`translations.ts` 內仍留有廣告、上架相關的未使用字串，可之後清理。
 5. 舊建置產物累積造成 APK 肥大（見「建置」）。
 
 ## 上架流程
