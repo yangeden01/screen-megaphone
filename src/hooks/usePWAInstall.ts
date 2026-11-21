@@ -13,6 +13,7 @@ export function usePWAInstall() {
   useEffect(() => {
     // Detect standalone mode (already installed)
     const isStandalone =
+      'ScreenMegaphoneAndroid' in window || // 已經是 Android App
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as unknown as { standalone?: boolean }).standalone === true;
     setIsInstalled(isStandalone);

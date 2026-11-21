@@ -20,11 +20,11 @@ Play 正式版：**10 (1.0.4)**，2026-11-21 21:36（台北）已發布、全面
 
 - 本 App 原本在 Google AI Studio 製作，由 AI Studio 推送到 GitHub；提交到 `c527870` 為止都來自 AI Studio。
 - 2026-11-21 起改由 Claude Code 維護，**GitHub 是唯一的正本**。AI Studio 不會讀回 GitHub 上的新修改，若再從 AI Studio 推送，會蓋掉之後的修改，所以不要再用 AI Studio 改這個 App。
-- AI Studio 專案保留當備份，不要刪除。`metadata.json`、`.env.example` 是 AI Studio 遺留的檔案；AI Studio 對話截圖已於 v1.0.5 移除（git 歷史中仍在）。
+- AI Studio 專案保留當備份，不要刪除。AI Studio 遺留的檔案（`metadata.json`、`.env.example`、`dev-dist/`、`bun.lock`）已於 v1.0.8 移除；對話截圖已於 v1.0.5 移除（git 歷史中仍在）。
 
 ## 架構
 
-Bubblewrap 產生的 TWA 外殼，但實際改成 **WebView 載入 APK 內的離線網頁**，不依賴任何伺服器。
+**單一 WebView Activity 載入 APK 內的離線網頁**，不依賴任何伺服器。原本由 Bubblewrap 產生的 TWA 專案，v1.0.8 起已移除所有 TWA 元件、`androidbrowserhelper`、`twa-manifest.json`。
 
 - 前端 `src/`：React 19、Vite 8、Tailwind 4、motion、canvas-confetti。主畫面 `App.tsx`，跑馬燈繪製 `components/MarqueeCanvas.tsx`，全螢幕 `FullscreenDisplay.tsx`。
 - 多語系 `src/i18n/translations.ts`：en、ja、ko、zh-TW、zh-CN，依裝置語言自動切換，可手動切換。新增文字要五種語言都補。
@@ -34,10 +34,11 @@ Bubblewrap 產生的 TWA 外殼，但實際改成 **WebView 載入 APK 內的離
 - 繁中的書法（Ma Shan Zheng）、可愛（ZCOOL KuaiLe）是簡體字型，部分繁體字（例如「應」）沒有字形，會退回粗黑體。
 - **字級**：滑桿值（36–130，沿用舊儲存值）換算成「文字高度佔畫面短邊的比例」50%–90%（`fontSizeToHeightRatio`），預覽與全螢幕同比例；置中、閃爍、來回模式若太寬會縮小到 92% 畫面寬。強制橫向是把畫布排成「視窗高 × 視窗寬」再轉 90 度。
 - **螢幕常亮**：Android WebView 不支援網頁 Wake Lock API，所以 `LauncherActivity` 提供 JS 介面 `ScreenMegaphoneAndroid.setKeepScreenOn(bool)`，`src/hooks/useWakeLock.ts` 在 App 內優先使用它；只在全螢幕時開啟。App 切到背景時會暫停 WebView。
-- `vite.config.ts` 用 `@vitejs/plugin-legacy`（Chrome ≥ 60、Android ≥ 7）與 `vite-plugin-pwa`；舊版 WebView 黑屏問題靠這兩者處理，不要移除。
+- `vite.config.ts` 用 `@vitejs/plugin-legacy`（Chrome ≥ 60、Android ≥ 7），舊版 WebView 黑屏問題靠它處理，不要移除（它需要 `terser`）。
+- `vite-plugin-pwa`：Service Worker 只在網頁版註冊（`src/main.tsx`）；在 Android App 內（偵測 `window.ScreenMegaphoneAndroid`）不註冊，並清掉舊版本留下的 Service Worker 與快取。
+- WebView 不開任何 file:// / content:// 存取權限（網頁經 `WebViewAssetLoader` 的 https 虛擬網域載入）。主題 `AppTheme`（`res/values/styles.xml`）為不透明深色背景。
 - AGP 8.9.1、JDK 17、compileSdk/targetSdk 36、minSdk 24。
-- `twa-manifest.json` 的 `host` 指向 AI Studio 預覽網址（`ais-pre-*.run.app`），只剩 Bubblewrap 設定用途；App 執行時不會連線過去。
-- 沒有後端。`@google/genai`、`express` 是 AI Studio 範本殘留，目前程式未使用。
+- 沒有後端，也不連任何外部網址。
 
 ## 建置
 
@@ -75,8 +76,8 @@ CI：`.github/workflows/build-android-aab.yml`，`main` push 或手動 dispatch 
 
 ## 版本
 
-- versionCode / versionName 寫在 `app/build.gradle` 與 `twa-manifest.json` 兩處，要一起改；CI 不會自動遞增。
-- 程式碼目前 13 / 1.0.7（全螢幕字自動放大、修正強制橫向）。12 / 1.0.6（效能、離線字體、螢幕常亮）。11 / 1.0.5（清除截圖與舊建置檔）的 AAB 由 PR #5 合併後的 CI 產出，等上傳金鑰生效後上架；正式版為 10 / 1.0.4。Play 已用過 versionCode 4（2026-11-21 上傳內部測試時被拒），實際最大值不明，所以直接跳到 10。下次上傳若再被拒就繼續往上加，並把 Play 實際用到的數字記在這裡。
+- versionCode / versionName 只寫在 `app/build.gradle`；CI 不會自動遞增。
+- 程式碼目前 14 / 1.0.8（清理：移除 TWA 殘留、關閉 WebView 檔案存取、App 內不用 Service Worker、移除未用套件與字串）。13 / 1.0.7（全螢幕字自動放大、修正強制橫向）。12 / 1.0.6（效能、離線字體、螢幕常亮）。11 / 1.0.5（清除截圖與舊建置檔）的 AAB 由 PR #5 合併後的 CI 產出，等上傳金鑰生效後上架；正式版為 10 / 1.0.4。Play 已用過 versionCode 4（2026-11-21 上傳內部測試時被拒），實際最大值不明，所以直接跳到 10。下次上傳若再被拒就繼續往上加，並把 Play 實際用到的數字記在這裡。
 - 1.0.4 的內容與原本準備的 1.0.3 相同（移除模擬廣告與上架教學）。
 
 ## 現況與風險（依優先順序，只回報，待使用者決定）
@@ -84,13 +85,13 @@ CI：`.github/workflows/build-android-aab.yml`，`main` push 或手動 dispatch 
 1. ~~上傳金鑰外洩~~：2026-11-21 已重設上傳金鑰、CI 改用 Secrets、刪除 `release.keystore` 與寫死的密碼。新金鑰 2026-11-23 22:37（台北）後才能上傳。
 2. ~~模擬廣告~~：v1.0.3 已移除。要接真的 AdMob 須在 Android 原生層加 SDK，另案處理。
 3. ~~APK 內含個人截圖~~：v1.0.5 已移除（AI Studio 截圖、`.aistudio/`）。Play 商店圖片移到 repo 根目錄 `store-assets/`，不再打包進 APK。舊截圖仍留在 git 歷史，要徹底清除需改寫歷史，未處理。
-4. ~~上架教學卡片~~：v1.0.3 已移除。`translations.ts` 內仍留有廣告、上架相關的未使用字串，可之後清理。
+4. ~~上架教學卡片~~：v1.0.3 已移除；未使用的翻譯字串於 v1.0.8 清除。
 5. ~~舊建置產物累積~~：v1.0.5 已改成每次建置先清空，且不再提交建置產物。
 
 ## 上架流程
 
 1. 通過 `npm run lint`、`npm run build`。
-2. 同步遞增 `app/build.gradle` 與 `twa-manifest.json` 的 versionCode、versionName。
+2. 遞增 `app/build.gradle` 的 versionCode、versionName。
 3. 推送到 `main`（經使用者同意），等 CI 成功。
 4. 在 CI 的「Show Signing Certificate Fingerprint」步驟確認 SHA-256 與 Play Console 的上傳金鑰一致。
 5. 從 Artifacts 下載 `screen-megaphone-google-play-aab`，先上傳內部測試軌。

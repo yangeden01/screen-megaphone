@@ -166,13 +166,15 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
       const angle = burstCount % 3 === 0 ? 90 : burstCount % 2 === 0 ? 60 : 120;
 
       confetti({
-        particleCount: 45 + Math.floor(Math.random() * 30),
+        // 維持 100 連發；每發粒子數減少、壽命縮短，避免中低階手機卡頓
+        particleCount: 28 + Math.floor(Math.random() * 18),
         angle: angle + (Math.random() * 20 - 10),
         spread: 60 + Math.random() * 30,
         origin: { x: originX, y: 0.75 + Math.random() * 0.15 },
         colors: ['#ff0055', '#00ffcc', '#ffcc00', '#3b82f6', '#a855f7', '#ff3366', '#00ff88'],
         startVelocity: 35 + Math.random() * 20,
-        ticks: 200,
+        ticks: 150,
+        disableForReducedMotion: true,
         gravity: 0.9,
       });
 

@@ -16,6 +16,8 @@ export default defineConfig(() => {
       }),
       VitePWA({
         registerType: 'autoUpdate',
+        // 不自動注入註冊程式：src/main.tsx 只在網頁版註冊，Android App 內不使用 Service Worker
+        injectRegister: false,
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
         manifest: {
           id: '/',
