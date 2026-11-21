@@ -72,7 +72,8 @@ CI：`.github/workflows/build-android-aab.yml`，`main` push 或手動 dispatch 
 ## 版本
 
 - versionCode / versionName 寫在 `app/build.gradle` 與 `twa-manifest.json` 兩處，要一起改；CI 不會自動遞增。
-- 目前 4 / 1.0.3（移除模擬廣告與上架教學）。Play 上已上傳的最大 versionCode 待確認；若 4 已被用過，要再往上加。
+- 目前 10 / 1.0.4。Play 已用過 versionCode 4（2026-11-21 上傳內部測試時被拒），實際最大值不明，所以直接跳到 10。下次上傳若再被拒就繼續往上加，並把 Play 實際用到的數字記在這裡。
+- 1.0.4 的內容與原本準備的 1.0.3 相同（移除模擬廣告與上架教學）。
 
 ## 現況與風險（依優先順序，只回報，待使用者決定）
 
