@@ -152,6 +152,16 @@ android {
     }
     signingConfigs {
         release {
+            // 優先使用 CI 從 GitHub Secrets 解出的上傳金鑰（SIGNING_KEYSTORE_PATH 等環境變數）。
+            // 沒有設定 Secrets 時，才退回 repo 內的舊金鑰（過渡期用，上傳金鑰重設生效後移除）。
+            def envKeystorePath = System.getenv('SIGNING_KEYSTORE_PATH')
+            if (envKeystorePath && file(envKeystorePath).exists()) {
+                storeFile file(envKeystorePath)
+                storePassword System.getenv('SIGNING_STORE_PASSWORD')
+                keyAlias System.getenv('SIGNING_KEY_ALIAS')
+                keyPassword System.getenv('SIGNING_KEY_PASSWORD')
+                return
+            }
             def keystoreFile = file('../release.keystore')
             if (!keystoreFile.exists()) {
                 keystoreFile = file('../../release.keystore')

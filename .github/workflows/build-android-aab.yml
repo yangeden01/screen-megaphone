@@ -37,19 +37,36 @@ jobs:
           echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           sudo ln -s /usr/local/lib/android/sdk/cmdline-tools/latest /usr/local/lib/android/sdk/tools 2>/dev/null || true
 
-      - name: Generate Android Signing Keystore
+      - name: Prepare Upload Signing Key from Secrets
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: |
-          rm -f android.keystore
-          keytool -genkey -v -keystore android.keystore \
-            -alias android \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass androidpassword -keypass androidpassword \
-            -dname "CN=ScreenMegaphone, OU=App, O=Megaphone, L=Taipei, S=Taiwan, C=TW"
+          if [ -n "$SIGNING_KEYSTORE_BASE64" ]; then
+            echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.keystore"
+            {
+              echo "SIGNING_KEYSTORE_PATH=$RUNNER_TEMP/upload.keystore"
+              echo "SIGNING_STORE_PASSWORD=$SIGNING_STORE_PASSWORD"
+              echo "SIGNING_KEY_ALIAS=$SIGNING_KEY_ALIAS"
+              echo "SIGNING_KEY_PASSWORD=$SIGNING_KEY_PASSWORD"
+            } >> "$GITHUB_ENV"
+            echo "使用 GitHub Secrets 中的上傳金鑰"
+          else
+            echo "::warning::未設定 SIGNING_KEYSTORE_BASE64，沿用 repo 內的舊金鑰 release.keystore"
+          fi
 
       - name: Build Android Project with Gradle
         run: |
           chmod +x ./gradlew
           ./gradlew bundleRelease assembleRelease
+
+      - name: Show Signing Certificate Fingerprint
+        run: |
+          AAB=$(find app/build/outputs/bundle/release -name "*.aab" | head -1)
+          echo "=== AAB 簽署憑證（核對 Play Console 的上傳金鑰 SHA-256）==="
+          keytool -printcert -jarfile "$AAB" | grep -E "SHA256|Owner"
 
       - name: List Generated Artifacts
         run: |
@@ -62,7 +79,6 @@ jobs:
           name: screen-megaphone-google-play-aab
           path: |
             app/build/outputs/bundle/release/*.aab
-            android.keystore
           retention-days: 30
 
       - name: Upload APK (Direct Phone Install) Artifact
