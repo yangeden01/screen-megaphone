@@ -50,7 +50,8 @@ export default defineConfig(() => {
           ],
         },
         workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+          // 字體檔很大且已在 APK 內，不放進 Service Worker 預先快取
+          globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         },
         devOptions: {
           enabled: true,

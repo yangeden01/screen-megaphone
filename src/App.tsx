@@ -348,7 +348,7 @@ export default function App() {
 
             {/* Canvas viewport container */}
             <div className="relative h-44 sm:h-56 md:h-72 w-full rounded-xl md:rounded-2xl overflow-hidden bg-black border border-zinc-800/90 shadow-inner">
-              <MarqueeCanvas config={config} lang={currentLang} />
+              <MarqueeCanvas config={config} lang={currentLang} suspended={isFullscreen} />
 
               {/* Fast Fullscreen Button Hover Badge */}
               <button
