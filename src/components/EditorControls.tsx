@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { translations, SupportedLanguage } from '../i18n/translations';
 
-import { getFontDefinitionsForLang } from '../utils/fontHelper';
+import { getFontDefinitionsForLang, fontSizeToHeightRatio, FONT_SIZE_MIN, FONT_SIZE_MAX } from '../utils/fontHelper';
 
 interface EditorControlsProps {
   config: BannerConfig;
@@ -216,12 +216,14 @@ export const EditorControls: React.FC<EditorControlsProps> = ({ config, onChange
               <Type className="w-3 h-3 text-cyan-400" />
               {t.fontSize}
             </span>
-            <span className="font-mono text-cyan-400 font-semibold">{config.fontSize}px</span>
+            <span className="font-mono text-cyan-400 font-semibold">
+              {Math.round(fontSizeToHeightRatio(config.fontSize) * 100)}%
+            </span>
           </div>
           <input
             type="range"
-            min="36"
-            max="130"
+            min={FONT_SIZE_MIN}
+            max={FONT_SIZE_MAX}
             step="2"
             value={config.fontSize}
             onChange={(e) => onChange({ fontSize: Number(e.target.value) })}

@@ -32,6 +32,7 @@ Bubblewrap 產生的 TWA 外殼，但實際改成 **WebView 載入 APK 內的離
 - `app/src/main/assets/web/` 是建置產物，**不進 git**（列在 `.gitignore`）。`npm run build` 會先清空再把 `dist/` 複製進去，所以本機或 CI 跑 Gradle 前一定要先 `npm run build`。
 - **字體離線打包**：`scripts/gen-fonts.mjs` 在 `npm run build`／`dev` 時把 `@fontsource/*` 的 woff2 複製到 `public/fonts/`（不進 git），`index.html` 載入 `fonts/fonts.css`。不從 Google Fonts 載入。不能改成在 CSS 裡 import 交給 Vite 打包：約 900 個 `@font-face` 會讓 rolldown 堆疊溢位。新增字體要同步改 `scripts/gen-fonts.mjs` 與 `src/utils/fontHelper.ts`。
 - 繁中的書法（Ma Shan Zheng）、可愛（ZCOOL KuaiLe）是簡體字型，部分繁體字（例如「應」）沒有字形，會退回粗黑體。
+- **字級**：滑桿值（36–130，沿用舊儲存值）換算成「文字高度佔畫面短邊的比例」50%–90%（`fontSizeToHeightRatio`），預覽與全螢幕同比例；置中、閃爍、來回模式若太寬會縮小到 92% 畫面寬。強制橫向是把畫布排成「視窗高 × 視窗寬」再轉 90 度。
 - **螢幕常亮**：Android WebView 不支援網頁 Wake Lock API，所以 `LauncherActivity` 提供 JS 介面 `ScreenMegaphoneAndroid.setKeepScreenOn(bool)`，`src/hooks/useWakeLock.ts` 在 App 內優先使用它；只在全螢幕時開啟。App 切到背景時會暫停 WebView。
 - `vite.config.ts` 用 `@vitejs/plugin-legacy`（Chrome ≥ 60、Android ≥ 7）與 `vite-plugin-pwa`；舊版 WebView 黑屏問題靠這兩者處理，不要移除。
 - AGP 8.9.1、JDK 17、compileSdk/targetSdk 36、minSdk 24。
@@ -75,7 +76,7 @@ CI：`.github/workflows/build-android-aab.yml`，`main` push 或手動 dispatch 
 ## 版本
 
 - versionCode / versionName 寫在 `app/build.gradle` 與 `twa-manifest.json` 兩處，要一起改；CI 不會自動遞增。
-- 程式碼目前 12 / 1.0.6（效能、離線字體、螢幕常亮）。11 / 1.0.5（清除截圖與舊建置檔）的 AAB 由 PR #5 合併後的 CI 產出，等上傳金鑰生效後上架；正式版為 10 / 1.0.4。Play 已用過 versionCode 4（2026-11-21 上傳內部測試時被拒），實際最大值不明，所以直接跳到 10。下次上傳若再被拒就繼續往上加，並把 Play 實際用到的數字記在這裡。
+- 程式碼目前 13 / 1.0.7（全螢幕字自動放大、修正強制橫向）。12 / 1.0.6（效能、離線字體、螢幕常亮）。11 / 1.0.5（清除截圖與舊建置檔）的 AAB 由 PR #5 合併後的 CI 產出，等上傳金鑰生效後上架；正式版為 10 / 1.0.4。Play 已用過 versionCode 4（2026-11-21 上傳內部測試時被拒），實際最大值不明，所以直接跳到 10。下次上傳若再被拒就繼續往上加，並把 Play 實際用到的數字記在這裡。
 - 1.0.4 的內容與原本準備的 1.0.3 相同（移除模擬廣告與上架教學）。
 
 ## 現況與風險（依優先順序，只回報，待使用者決定）

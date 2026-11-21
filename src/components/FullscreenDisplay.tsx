@@ -35,6 +35,17 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   const [showHUD, setShowHUD] = useState(true);
   const [isForcedLandscape, setIsForcedLandscape] = useState(false);
+  // 強制橫向時用到的視窗尺寸（不用 dvh/dvw，舊版 Android WebView 不支援）
+  const [viewport, setViewport] = useState(() => ({ w: window.innerWidth, h: window.innerHeight }));
+  useEffect(() => {
+    const onResize = () => setViewport({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+    };
+  }, []);
   const [brightness, setBrightness] = useState(100);
   const [isStrobing, setIsStrobing] = useState(false);
   const hideTimerRef = useRef<number | null>(null);
@@ -183,10 +194,21 @@ export const FullscreenDisplay: React.FC<FullscreenDisplayProps> = ({
       style={{ filter: `brightness(${brightness}%)` }}
     >
       {/* Marquee Display Canvas Container */}
+      {/* 強制橫向：把畫布排成「螢幕高 × 螢幕寬」的橫向尺寸再轉 90 度，
+          手機直拿、側過來看時文字沿著長邊顯示 */}
       <div
-        className={`absolute inset-0 w-full h-full transition-transform duration-300 ${
-          isForcedLandscape ? 'rotate-90 origin-center scale-[1.3]' : ''
-        }`}
+        className={isForcedLandscape ? 'absolute' : 'absolute inset-0 w-full h-full'}
+        style={
+          isForcedLandscape
+            ? {
+                width: viewport.h,
+                height: viewport.w,
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%) rotate(90deg)',
+              }
+            : undefined
+        }
       >
         <MarqueeCanvas
           config={config}

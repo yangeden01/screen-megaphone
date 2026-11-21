@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { BannerConfig } from '../types/banner';
 import { SupportedLanguage, translations } from '../i18n/translations';
-import { resolveCanvasFont } from '../utils/fontHelper';
+import { resolveCanvasFont, fontSizeToHeightRatio } from '../utils/fontHelper';
 
 interface MarqueeCanvasProps {
   config: BannerConfig;
@@ -241,12 +241,23 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
       }
 
       // Dynamically resolve optimal font family stack based on active language
-      const currentFontSize = config.fontSize;
-      const { fontString } = resolveCanvasFont(config.fontFamily, lang, currentFontSize);
+      // 字級依畫面短邊自動縮放：橫向時撐滿高度；直向時不會大到一次只看到一個字
+      let currentFontSize = Math.max(12, Math.min(w, h) * fontSizeToHeightRatio(config.fontSize));
+      let { fontString } = resolveCanvasFont(config.fontFamily, lang, currentFontSize);
       ctx.font = fontString;
       ctx.textBaseline = 'middle';
-      const textMetrics = ctx.measureText(config.text);
-      const textWidth = textMetrics.width;
+      let textWidth = ctx.measureText(config.text).width;
+
+      // 不捲動的模式（置中、閃爍、來回）文字必須完整放進畫面，太寬就縮小
+      const mustFitWidth =
+        config.direction === 'static' || config.direction === 'blink' || config.direction === 'bounce';
+      const maxWidth = w * 0.92;
+      if (mustFitWidth && textWidth > maxWidth && textWidth > 0) {
+        currentFontSize = Math.max(12, currentFontSize * (maxWidth / textWidth));
+        ({ fontString } = resolveCanvasFont(config.fontFamily, lang, currentFontSize));
+        ctx.font = fontString;
+        textWidth = ctx.measureText(config.text).width;
+      }
 
       // Calculate speed
       const baseSpeed = config.speed * 80; // pixels per sec

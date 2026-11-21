@@ -249,3 +249,12 @@ export function resolveCanvasFont(
     fontFamily: matched.fontFamily,
   };
 }
+
+// 字級滑桿（36–130，沿用舊的儲存值）對應到「文字高度佔畫面高度的比例」50%–90%。
+// 預覽與全螢幕都用同一個比例，所以預覽看到的比例就是全螢幕的樣子。
+export const FONT_SIZE_MIN = 36;
+export const FONT_SIZE_MAX = 130;
+export function fontSizeToHeightRatio(fontSize: number): number {
+  const t = Math.min(1, Math.max(0, (fontSize - FONT_SIZE_MIN) / (FONT_SIZE_MAX - FONT_SIZE_MIN)));
+  return 0.5 + 0.4 * t;
+}
