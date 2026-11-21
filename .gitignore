@@ -13,3 +13,4 @@ android.keystore
 app/src/main/assets/web/
 *.keystore
 *.jks
+public/fonts/
