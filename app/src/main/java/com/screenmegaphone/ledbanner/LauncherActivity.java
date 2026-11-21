@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -30,8 +31,8 @@ public class LauncherActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Keep screen awake permanently for concert and event marquee use
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        // 螢幕常亮只在全螢幕舉牌時開啟：由網頁透過 ScreenMegaphoneAndroid.setKeepScreenOn() 控制，
+        // 編輯畫面維持系統預設的自動關螢幕，避免耗電。
 
         // Immersive full-screen display without title bar
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -80,6 +81,9 @@ public class LauncherActivity extends Activity {
         settings.setBuiltInZoomControls(false);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
+        // 只提供「螢幕常亮」一個方法給 App 內建網頁使用（Android WebView 不支援網頁 Wake Lock API）
+        webView.addJavascriptInterface(new ScreenBridge(), "ScreenMegaphoneAndroid");
+
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
@@ -118,6 +122,41 @@ public class LauncherActivity extends Activity {
         webView.loadUrl("https://appassets.androidplatform.net/assets/web/index.html");
 
         setContentView(webView);
+    }
+
+    private class ScreenBridge {
+        @JavascriptInterface
+        public void setKeepScreenOn(final boolean on) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (on) {
+                        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                    } else {
+                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                    }
+                }
+            });
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        // 切到背景時暫停網頁動畫與計時器，避免在背景持續繪圖耗電
+        if (webView != null) {
+            webView.onPause();
+            webView.pauseTimers();
+        }
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (webView != null) {
+            webView.resumeTimers();
+            webView.onResume();
+        }
     }
 
     private void hideSystemUI() {

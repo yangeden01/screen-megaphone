@@ -9,7 +9,12 @@ interface MarqueeCanvasProps {
   className?: string;
   onTogglePause?: () => void;
   lang?: SupportedLanguage;
+  /** 為 true 時停止繪製（例如全螢幕蓋住編輯頁預覽時），省電 */
+  suspended?: boolean;
 }
+
+// 發光 LED 點的預繪圖（每種顏色一張），避免每一幀對每顆點做 shadowBlur
+type DotSprite = { canvas: HTMLCanvasElement; half: number };
 
 export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
   config,
@@ -17,6 +22,7 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
   className = '',
   onTogglePause,
   lang = 'zh-TW',
+  suspended = false,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -31,6 +37,12 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
   const rainbowOffsetRef = useRef<number>(0);
 
   const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  // 背景格點只在尺寸或點距改變時重畫一次
+  const gridCacheRef = useRef<{ key: string; canvas: HTMLCanvasElement } | null>(null);
+  // 發光點預繪圖快取，key = 顏色|點大小|光暈|dpr
+  const spriteCacheRef = useRef<Map<string, DotSprite>>(new Map());
+  // 字體載入完成後遞增，觸發重新繪製
+  const [fontsReadyTick, setFontsReadyTick] = useState(0);
 
   // Measure container size
   const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
@@ -70,12 +82,69 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
 
   // Compute text color or rainbow gradient
   const getRainbowColor = useCallback((xPercent: number, timeOffset: number) => {
-    const hue = (xPercent * 360 + timeOffset * 70) % 360;
+    // 量化到 10 度一階，讓點陣模式的發光點預繪圖可以重複使用
+    const hue = Math.round(((xPercent * 360 + timeOffset * 70) % 360) / 10) * 10;
     return `hsl(${hue}, 100%, 60%)`;
   }, []);
 
+  // 確保畫布用到的字體已載入：Canvas 本身不會觸發網頁字體下載，
+  // 要主動 load，載入完成後重新開始繪製迴圈，避免一直停在預設字體。
+  useEffect(() => {
+    if (typeof document === 'undefined' || !document.fonts?.load) return;
+    let cancelled = false;
+    const { fontString } = resolveCanvasFont(config.fontFamily, lang, 48);
+    document.fonts
+      .load(fontString, config.text || 'A')
+      .then((faces) => {
+        if (!cancelled && faces.length > 0) setFontsReadyTick((n) => n + 1);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [config.fontFamily, config.text, lang]);
+
+  const getDotSprite = useCallback(
+    (color: string, dotSize: number, glow: number, dpr: number): DotSprite => {
+      const key = `${color}|${dotSize}|${glow}|${dpr}`;
+      const cache = spriteCacheRef.current;
+      const hit = cache.get(key);
+      if (hit) return hit;
+
+      // 以最大亮度（半徑 = dotSize/2 * 1.2）預繪，繪製時再依亮度縮放
+      const radius = (dotSize / 2) * 1.2;
+      const blur = glow > 0 ? glow * 2.5 : 0;
+      const half = Math.ceil(radius + blur * 1.5 + 2);
+      const c = document.createElement('canvas');
+      c.width = c.height = Math.ceil(half * 2 * dpr);
+      const g = c.getContext('2d');
+      if (g) {
+        g.scale(dpr, dpr);
+        if (blur > 0) {
+          g.shadowColor = color;
+          g.shadowBlur = blur * dpr;
+        }
+        g.fillStyle = color;
+        g.beginPath();
+        g.arc(half, half, Math.max(1, radius), 0, Math.PI * 2);
+        g.fill();
+        g.shadowBlur = 0;
+        g.fillStyle = '#ffffff';
+        g.beginPath();
+        g.arc(half - radius * 0.25, half - radius * 0.25, radius * 0.35, 0, Math.PI * 2);
+        g.fill();
+      }
+      const sprite = { canvas: c, half };
+      if (cache.size > 200) cache.clear();
+      cache.set(key, sprite);
+      return sprite;
+    },
+    []
+  );
+
   // Main rendering loop
   useEffect(() => {
+    if (suspended) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d', { alpha: false });
@@ -134,16 +203,32 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
 
       // Render dot matrix pattern if in LED matrix mode
       if (config.renderMode === 'led-matrix') {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
-        for (let r = 0; r < rows; r++) {
-          for (let c = 0; c < cols; c++) {
-            const cx = c * dotPitch + dotPitch / 2;
-            const cy = r * dotPitch + dotPitch / 2;
-            ctx.beginPath();
-            ctx.arc(cx, cy, config.dotSize / 2 - 0.5, 0, Math.PI * 2);
-            ctx.fill();
+        const gridKey = `${w}x${h}@${dpr}|${dotPitch}|${config.dotSize}`;
+        let grid = gridCacheRef.current;
+        if (!grid || grid.key !== gridKey) {
+          const gc = document.createElement('canvas');
+          gc.width = Math.ceil(w * dpr);
+          gc.height = Math.ceil(h * dpr);
+          const g = gc.getContext('2d');
+          if (g) {
+            g.scale(dpr, dpr);
+            g.fillStyle = 'rgba(255, 255, 255, 0.06)';
+            const dotR = Math.max(0.5, config.dotSize / 2 - 0.5);
+            g.beginPath();
+            for (let r = 0; r < rows; r++) {
+              for (let c = 0; c < cols; c++) {
+                const cx = c * dotPitch + dotPitch / 2;
+                const cy = r * dotPitch + dotPitch / 2;
+                g.moveTo(cx + dotR, cy);
+                g.arc(cx, cy, dotR, 0, Math.PI * 2);
+              }
+            }
+            g.fill();
           }
+          grid = { key: gridKey, canvas: gc };
+          gridCacheRef.current = grid;
         }
+        ctx.drawImage(grid.canvas, 0, 0, w, h);
       } else if (config.renderMode === 'pixel-art') {
         // Subtle 8-bit retro arcade background grid lines
         const blockSize = Math.max(3, Math.min(8, Math.round(config.fontSize / 15)));
@@ -254,24 +339,11 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
                       : (isLeftHalf ? '#3b82f6' : '#ef4444');
                   }
 
-                  if (config.glowIntensity > 0) {
-                    ctx.shadowColor = litColor;
-                    ctx.shadowBlur = config.glowIntensity * 2.5;
-                  } else {
-                    ctx.shadowBlur = 0;
-                  }
-
-                  ctx.fillStyle = litColor;
-                  ctx.beginPath();
-                  ctx.arc(cx, cy, Math.max(1, dotRadius), 0, Math.PI * 2);
-                  ctx.fill();
-
-                  // Diode core bright highlight
-                  ctx.shadowBlur = 0;
-                  ctx.fillStyle = '#ffffff';
-                  ctx.beginPath();
-                  ctx.arc(cx - dotRadius * 0.25, cy - dotRadius * 0.25, dotRadius * 0.35, 0, Math.PI * 2);
-                  ctx.fill();
+                  // 貼上預繪的發光點，依亮度縮放（取代逐點 shadowBlur）
+                  const sprite = getDotSprite(litColor, config.dotSize, config.glowIntensity, dpr);
+                  const scale = Math.max(1, dotRadius) / ((config.dotSize / 2) * 1.2);
+                  const size = sprite.half * 2 * scale;
+                  ctx.drawImage(sprite.canvas, cx - size / 2, cy - size / 2, size, size);
                 }
               }
             }
@@ -437,7 +509,10 @@ export const MarqueeCanvas: React.FC<MarqueeCanvasProps> = ({
     config,
     isPaused,
     getRainbowColor,
+    getDotSprite,
     lang,
+    suspended,
+    fontsReadyTick,
   ]);
 
   return (
