@@ -11,3 +11,5 @@ app/build/
 .aistudio/
 android.keystore
 app/src/main/assets/web/
+*.keystore
+*.jks

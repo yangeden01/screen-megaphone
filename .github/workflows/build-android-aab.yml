@@ -54,7 +54,8 @@ jobs:
             } >> "$GITHUB_ENV"
             echo "使用 GitHub Secrets 中的上傳金鑰"
           else
-            echo "::warning::未設定 SIGNING_KEYSTORE_BASE64，沿用 repo 內的舊金鑰 release.keystore"
+            echo "::error::未設定 SIGNING_KEYSTORE_BASE64 等 GitHub Secrets，無法簽署上傳金鑰，停止建置"
+            exit 1
           fi
 
       - name: Build Android Project with Gradle

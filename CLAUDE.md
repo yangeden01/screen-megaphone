@@ -61,23 +61,23 @@ CI：`.github/workflows/build-android-aab.yml`，`main` push 或手動 dispatch 
 
 ## 簽署
 
-- 必須使用 Play App Signing（上傳 AAB 必備）；repo 內的金鑰只是**上傳金鑰**，不是應用程式簽署金鑰。
-- CI 優先使用 GitHub Secrets 的上傳金鑰：`SIGNING_KEYSTORE_BASE64`、`SIGNING_STORE_PASSWORD`、`SIGNING_KEY_ALIAS`、`SIGNING_KEY_PASSWORD`。由 workflow 解碼到 `$RUNNER_TEMP`，再透過 `SIGNING_KEYSTORE_PATH` 等環境變數交給 `app/build.gradle`。
-- 沒有設定 Secrets 時，才退回 repo 根目錄的舊金鑰 `release.keystore`（SHA-256 `F0:EE:FB:34…7D:B7:E3:3A`）。這把金鑰與密碼已在公開 repo 外洩，只作過渡用。
-- 2026-11-21 產生新上傳金鑰（alias `upload`，SHA-256 `B9:14:83:D1…7F:47:C4:AE`），存放在使用者自己保管的地方，不在 repo 內，並向 Play Console 申請重設上傳金鑰。
-- 上傳金鑰重設**生效後**才把新金鑰填入 GitHub Secrets；之後另開 PR 刪除 `release.keystore` 與 `app/build.gradle` 裡寫死的舊密碼。生效前就改用新金鑰，Play 會拒收。
-- CI 的「Show Signing Certificate Fingerprint」步驟會印出 AAB 的簽署憑證 SHA-256，上傳前核對它與 Play Console 顯示的上傳金鑰一致。
-- 不得更換應用程式簽署金鑰。
+- 必須使用 Play App Signing（上傳 AAB 必備）；CI 簽的是**上傳金鑰**，不是應用程式簽署金鑰。
+- 上傳金鑰只放在 GitHub Secrets：`SIGNING_KEYSTORE_BASE64`、`SIGNING_STORE_PASSWORD`、`SIGNING_KEY_ALIAS`、`SIGNING_KEY_PASSWORD`。workflow 解碼到 `$RUNNER_TEMP`，再透過 `SIGNING_KEYSTORE_PATH` 等環境變數交給 `app/build.gradle`。**沒有 Secrets 時 CI 直接失敗**，不會用其他金鑰簽署。
+- 現行上傳金鑰：alias `upload`，SHA-256 `B9:14:83:D1…7F:47:C4:AE`（SHA1 `53:51:CE:E2…`），2026-11-21 產生，原檔由使用者自行保管。
+- 舊上傳金鑰 `release.keystore`（SHA-256 `F0:EE:FB:34…`，SHA1 `07:6E:4A:05…`）曾連同密碼放在公開 repo，已於 2026-11-21 向 Play 申請重設並從 repo 刪除（git 歷史中仍在，但 Play 已不接受）。
+- 重設生效時間：**2026-11-23 14:36:58 UTC（台北 22:37）**。在此之前新舊金鑰都無法上傳。
+- 本機不簽署 release 版；要上傳一律用 CI 產出的 AAB。CI 的「Show Signing Certificate Fingerprint」步驟會印出 SHA-256，上傳前核對。
+- 不得更換應用程式簽署金鑰。金鑰或密碼不得寫進 repo（`.gitignore` 已排除 `*.keystore`、`*.jks`）。
 
 ## 版本
 
 - versionCode / versionName 寫在 `app/build.gradle` 與 `twa-manifest.json` 兩處，要一起改；CI 不會自動遞增。
-- 程式碼目前 11 / 1.0.5（清除截圖與舊建置檔，待上架）；正式版為 10 / 1.0.4。Play 已用過 versionCode 4（2026-11-21 上傳內部測試時被拒），實際最大值不明，所以直接跳到 10。下次上傳若再被拒就繼續往上加，並把 Play 實際用到的數字記在這裡。
+- 程式碼目前 11 / 1.0.5（清除截圖與舊建置檔），等上傳金鑰生效後上架；正式版為 10 / 1.0.4。Play 已用過 versionCode 4（2026-11-21 上傳內部測試時被拒），實際最大值不明，所以直接跳到 10。下次上傳若再被拒就繼續往上加，並把 Play 實際用到的數字記在這裡。
 - 1.0.4 的內容與原本準備的 1.0.3 相同（移除模擬廣告與上架教學）。
 
 ## 現況與風險（依優先順序，只回報，待使用者決定）
 
-1. **上傳金鑰外洩（處理中）。** 已產生新金鑰並改成 CI 讀 Secrets，等 Play Console 重設生效後填入 Secrets，再移除 `release.keystore`（見「簽署」）。
+1. ~~上傳金鑰外洩~~：2026-11-21 已重設上傳金鑰、CI 改用 Secrets、刪除 `release.keystore` 與寫死的密碼。新金鑰 2026-11-23 22:37（台北）後才能上傳。
 2. ~~模擬廣告~~：v1.0.3 已移除。要接真的 AdMob 須在 Android 原生層加 SDK，另案處理。
 3. ~~APK 內含個人截圖~~：v1.0.5 已移除（AI Studio 截圖、`.aistudio/`）。Play 商店圖片移到 repo 根目錄 `store-assets/`，不再打包進 APK。舊截圖仍留在 git 歷史，要徹底清除需改寫歷史，未處理。
 4. ~~上架教學卡片~~：v1.0.3 已移除。`translations.ts` 內仍留有廣告、上架相關的未使用字串，可之後清理。

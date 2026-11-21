@@ -152,31 +152,14 @@ android {
     }
     signingConfigs {
         release {
-            // 優先使用 CI 從 GitHub Secrets 解出的上傳金鑰（SIGNING_KEYSTORE_PATH 等環境變數）。
-            // 沒有設定 Secrets 時，才退回 repo 內的舊金鑰（過渡期用，上傳金鑰重設生效後移除）。
+            // 上傳金鑰只從環境變數讀取（CI 由 GitHub Secrets 解出，見 .github/workflows/build-android-aab.yml）。
+            // repo 內不放任何金鑰或密碼。沒有設定時 release 版不簽署，Play 會拒收。
             def envKeystorePath = System.getenv('SIGNING_KEYSTORE_PATH')
             if (envKeystorePath && file(envKeystorePath).exists()) {
                 storeFile file(envKeystorePath)
                 storePassword System.getenv('SIGNING_STORE_PASSWORD')
                 keyAlias System.getenv('SIGNING_KEY_ALIAS')
                 keyPassword System.getenv('SIGNING_KEY_PASSWORD')
-                return
-            }
-            def keystoreFile = file('../release.keystore')
-            if (!keystoreFile.exists()) {
-                keystoreFile = file('../../release.keystore')
-            }
-            if (!keystoreFile.exists()) {
-                keystoreFile = file('../android.keystore')
-            }
-            if (!keystoreFile.exists()) {
-                keystoreFile = file('../../android.keystore')
-            }
-            if (keystoreFile.exists()) {
-                storeFile keystoreFile
-                storePassword 'androidpassword'
-                keyAlias 'android'
-                keyPassword 'androidpassword'
             }
         }
     }
