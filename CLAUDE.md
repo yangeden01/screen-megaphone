@@ -20,7 +20,7 @@ Play 正式版：**10 (1.0.4)**，2026-11-21 21:36（台北）已發布、全面
 
 - 本 App 原本在 Google AI Studio 製作，由 AI Studio 推送到 GitHub；提交到 `c527870` 為止都來自 AI Studio。
 - 2026-11-21 起改由 Claude Code 維護，**GitHub 是唯一的正本**。AI Studio 不會讀回 GitHub 上的新修改，若再從 AI Studio 推送，會蓋掉之後的修改，所以不要再用 AI Studio 改這個 App。
-- AI Studio 專案保留當備份，不要刪除。`.aistudio/`、`assets/aistudio/`、`metadata.json`、`.env.example` 是 AI Studio 遺留的檔案。
+- AI Studio 專案保留當備份，不要刪除。`metadata.json`、`.env.example` 是 AI Studio 遺留的檔案；AI Studio 對話截圖已於 v1.0.5 移除（git 歷史中仍在）。
 
 ## 架構
 
@@ -29,7 +29,7 @@ Bubblewrap 產生的 TWA 外殼，但實際改成 **WebView 載入 APK 內的離
 - 前端 `src/`：React 19、Vite 8、Tailwind 4、motion、canvas-confetti。主畫面 `App.tsx`，跑馬燈繪製 `components/MarqueeCanvas.tsx`，全螢幕 `FullscreenDisplay.tsx`。
 - 多語系 `src/i18n/translations.ts`：en、ja、ko、zh-TW、zh-CN，依裝置語言自動切換，可手動切換。新增文字要五種語言都補。
 - Android `app/`：Java。`LauncherActivity.java` 以 `WebViewAssetLoader` 載入 `https://appassets.androidplatform.net/assets/web/index.html`，並處理橫向全螢幕（含瀏海）。
-- `app/src/main/assets/web/` 是建置產物（`npm run build` 會把 `dist/` 複製進去），不要手改。
+- `app/src/main/assets/web/` 是建置產物，**不進 git**（列在 `.gitignore`）。`npm run build` 會先清空再把 `dist/` 複製進去，所以本機或 CI 跑 Gradle 前一定要先 `npm run build`。
 - `vite.config.ts` 用 `@vitejs/plugin-legacy`（Chrome ≥ 60、Android ≥ 7）與 `vite-plugin-pwa`；舊版 WebView 黑屏問題靠這兩者處理，不要移除。
 - AGP 8.9.1、JDK 17、compileSdk/targetSdk 36、minSdk 24。
 - `twa-manifest.json` 的 `host` 指向 AI Studio 預覽網址（`ais-pre-*.run.app`），只剩 Bubblewrap 設定用途；App 執行時不會連線過去。
@@ -54,7 +54,7 @@ npm run build
 ```
 
 - `npm run build` 含 `mkdir -p`、`cp -r`，Windows 要用 Git Bash。
-- 每次 build 都會把新雜湊檔名的 `index-*.js` 加進 `app/src/main/assets/web/assets/`，舊檔不會被清掉，APK 會越來越大（目前約 39 MB）。
+- 打包進 APK 的網頁約 1.2 MB（v1.0.5 前因舊建置檔與截圖累積到 39 MB）。
 - 本機需要 JDK 17 與 Android SDK 36。
 
 CI：`.github/workflows/build-android-aab.yml`，`main` push 或手動 dispatch 觸發，建置 AAB 與 APK 放在 Artifacts（`screen-megaphone-google-play-aab`、`screen-megaphone-phone-apk`，保留 30 天）。**不會上傳 Play。**
@@ -72,16 +72,16 @@ CI：`.github/workflows/build-android-aab.yml`，`main` push 或手動 dispatch 
 ## 版本
 
 - versionCode / versionName 寫在 `app/build.gradle` 與 `twa-manifest.json` 兩處，要一起改；CI 不會自動遞增。
-- 目前 10 / 1.0.4，即正式版。Play 已用過 versionCode 4（2026-11-21 上傳內部測試時被拒），實際最大值不明，所以直接跳到 10。下次上傳若再被拒就繼續往上加，並把 Play 實際用到的數字記在這裡。
+- 程式碼目前 11 / 1.0.5（清除截圖與舊建置檔，待上架）；正式版為 10 / 1.0.4。Play 已用過 versionCode 4（2026-11-21 上傳內部測試時被拒），實際最大值不明，所以直接跳到 10。下次上傳若再被拒就繼續往上加，並把 Play 實際用到的數字記在這裡。
 - 1.0.4 的內容與原本準備的 1.0.3 相同（移除模擬廣告與上架教學）。
 
 ## 現況與風險（依優先順序，只回報，待使用者決定）
 
 1. **上傳金鑰外洩（處理中）。** 已產生新金鑰並改成 CI 讀 Secrets，等 Play Console 重設生效後填入 Secrets，再移除 `release.keystore`（見「簽署」）。
 2. ~~模擬廣告~~：v1.0.3 已移除。要接真的 AdMob 須在 Android 原生層加 SDK，另案處理。
-3. **APK 內含個人截圖。** `app/src/main/assets/web/assets/aistudio/`（49 張）與 `public/assets/aistudio/` 是 AI Studio 對話時上傳的 Play Console、GitHub 截圖，會被打包進 APK 與公開 repo。
+3. ~~APK 內含個人截圖~~：v1.0.5 已移除（AI Studio 截圖、`.aistudio/`）。Play 商店圖片移到 repo 根目錄 `store-assets/`，不再打包進 APK。舊截圖仍留在 git 歷史，要徹底清除需改寫歷史，未處理。
 4. ~~上架教學卡片~~：v1.0.3 已移除。`translations.ts` 內仍留有廣告、上架相關的未使用字串，可之後清理。
-5. 舊建置產物累積造成 APK 肥大（見「建置」）。
+5. ~~舊建置產物累積~~：v1.0.5 已改成每次建置先清空，且不再提交建置產物。
 
 ## 上架流程
 
