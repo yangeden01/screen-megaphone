@@ -7,8 +7,6 @@ import { TemplatePicker } from './components/TemplatePicker';
 import { SavedBanners } from './components/SavedBanners';
 import { PublishGuideModal } from './components/PublishGuideModal';
 import { PWAInstallButton } from './components/PWAInstallButton';
-import { AdBanner } from './components/AdBanner';
-import { AdInterstitialModal } from './components/AdInterstitialModal';
 import { 
   Maximize2, 
   Sparkles, 
@@ -63,7 +61,6 @@ export default function App() {
       return false;
     }
   });
-  const [showInterstitialAd, setShowInterstitialAd] = useState(false);
   const [activeTab, setActiveTab] = useState<'editor' | 'templates' | 'saved'>('editor');
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
@@ -87,20 +84,12 @@ export default function App() {
     } catch {}
   };
 
-  // Track the timestamp when entering fullscreen
-  const fullscreenStartTimeRef = React.useRef<number>(0);
   // Track if user manually dismissed fullscreen in current orientation
   const userManuallyExitedFullscreenRef = React.useRef<boolean>(false);
   // Track previous landscape orientation to only auto-trigger upon transition
   const lastOrientationLandscapeRef = React.useRef<boolean>(
     typeof window !== 'undefined' ? window.innerWidth > window.innerHeight : false
   );
-
-  useEffect(() => {
-    if (isFullscreen) {
-      fullscreenStartTimeRef.current = Date.now();
-    }
-  }, [isFullscreen]);
 
   const handleOpenFullscreen = useCallback(() => {
     userManuallyExitedFullscreenRef.current = false;
@@ -110,13 +99,6 @@ export default function App() {
   const handleCloseFullscreen = useCallback(() => {
     userManuallyExitedFullscreenRef.current = true;
     setIsFullscreen(false);
-    // 依使用者需求：全螢幕持續超過 20 秒才推廣告，小於 20 秒（調整參數階段）不要上廣告
-    const elapsedSeconds = (Date.now() - fullscreenStartTimeRef.current) / 1000;
-    if (elapsedSeconds >= 20) {
-      setShowInterstitialAd(true);
-    } else {
-      setShowInterstitialAd(false);
-    }
   }, []);
 
   // Automatically switch to full-screen display ONLY when user physically rotates phone to horizontal
@@ -458,9 +440,6 @@ export default function App() {
           )}
         </div>
 
-        {/* Bottom Banner Ad Placement */}
-        <AdBanner />
-
         {/* Value Proposition Callout Card: Answering the user's inquiry */}
         <div className="p-4 md:p-5 rounded-2xl bg-gradient-to-r from-pink-500/10 via-zinc-900 to-cyan-500/10 border border-zinc-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
@@ -510,13 +489,6 @@ export default function App() {
           lang={currentLang}
         />
       )}
-
-      {/* Interstitial Ad Simulation Modal on exit fullscreen */}
-      <AdInterstitialModal
-        isOpen={showInterstitialAd}
-        onClose={() => setShowInterstitialAd(false)}
-        lang={currentLang}
-      />
 
       {/* Publish & Monetization Guide Modal */}
       <PublishGuideModal
