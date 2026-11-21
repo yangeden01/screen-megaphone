@@ -14,6 +14,12 @@
 6. 工作告一段落前要推送；雲端環境閒置後會被回收，未推送的修改會遺失。
 7. AI Studio 時期留下的自動化（自動 push、自動產生金鑰）不再適用，一律以本檔為準。
 
+## 來源與交接
+
+- 本 App 原本在 Google AI Studio 製作，由 AI Studio 推送到 GitHub；提交到 `c527870` 為止都來自 AI Studio。
+- 2026-11-21 起改由 Claude Code 維護，**GitHub 是唯一的正本**。AI Studio 不會讀回 GitHub 上的新修改，若再從 AI Studio 推送，會蓋掉之後的修改，所以不要再用 AI Studio 改這個 App。
+- AI Studio 專案保留當備份，不要刪除。`.aistudio/`、`assets/aistudio/`、`metadata.json`、`.env.example` 是 AI Studio 遺留的檔案。
+
 ## 架構
 
 Bubblewrap 產生的 TWA 外殼，但實際改成 **WebView 載入 APK 內的離線網頁**，不依賴任何伺服器。
