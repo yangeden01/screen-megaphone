@@ -13,8 +13,8 @@ android {
         applicationId "com.screenmegaphone.ledbanner"
         minSdkVersion 24
         targetSdkVersion 36
-        versionCode 14
-        versionName "1.0.8"
+        versionCode 15
+        versionName "1.0.9"
 
         // App 名稱（設定、應用程式資訊）與桌面圖示下的名稱
         resValue "string", "appName", "螢幕大聲公 - LED 手持彈幕"
